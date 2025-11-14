@@ -122,6 +122,14 @@ if (pendingMobileSignin === 'true') {
 
 // Check authentication state
 onAuthStateChanged(auth, async (user) => {
+    // Don't interfere if we're waiting for redirect result
+    const waitingForRedirect = localStorage.getItem('pending_mobile_signin');
+    
+    if (waitingForRedirect === 'true') {
+        console.log('Waiting for redirect result, skipping auth state check');
+        return; // Exit early, let getRedirectResult handle it
+    }
+    
     if (user && !pendingRegistration) {
         console.log('User authenticated:', user.email);
         currentUser = user;
