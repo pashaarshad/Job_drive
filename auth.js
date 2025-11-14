@@ -51,44 +51,74 @@ function hideLoading() {
 
 // Check for redirect result (important for mobile)
 console.log('Checking for redirect result on page load...');
-showLoading();
 
-getRedirectResult(auth)
-    .then(async (result) => {
-        console.log('Redirect result:', result);
-        if (result && result.user) {
-            console.log('User signed in via redirect:', result.user.email);
-            hideLoading();
-            
-            currentUser = result.user;
-            localStorage.setItem('current_user_email', result.user.email);
-            
-            // Check if already registered
-            const userRef = doc(db, 'users', result.user.uid);
-            const userDoc = await getDoc(userRef);
-            
-            if (userDoc.exists() && userDoc.data().registrationComplete) {
-                console.log('User already registered, redirecting to dashboard...');
-                window.location.href = 'dashboard.html';
-            } else {
-                console.log('Opening registration modal...');
-                showRegistrationModal(result.user);
-            }
-        } else {
-            console.log('No redirect result');
-            hideLoading();
-        }
-    })
-    .catch((error) => {
-        console.error('Error getting redirect result:', error);
-        hideLoading();
+// Check if we're returning from mobile sign-in
+const pendingMobileSignin = localStorage.getItem('pending_mobile_signin');
+const signinTimestamp = localStorage.getItem('signin_timestamp');
+
+if (pendingMobileSignin === 'true') {
+    console.log('Returning from mobile sign-in redirect...');
+    
+    // Check if timestamp is recent (within 5 minutes)
+    const now = Date.now();
+    const timestamp = parseInt(signinTimestamp || '0');
+    const fiveMinutes = 5 * 60 * 1000;
+    
+    if (now - timestamp < fiveMinutes) {
+        console.log('Valid mobile sign-in attempt detected');
+        showLoading();
         
-        if (error.code === 'auth/unauthorized-domain') {
-            alert('⚠️ Add your Netlify domain to Firebase Console > Authentication > Authorized domains');
-        } else if (error.code !== 'auth/popup-closed-by-user') {
-            console.error('Sign-in error:', error.message);
-        }
-    });
+        getRedirectResult(auth)
+            .then(async (result) => {
+                console.log('Redirect result:', result);
+                
+                // Clear the flag immediately
+                localStorage.removeItem('pending_mobile_signin');
+                localStorage.removeItem('signin_timestamp');
+                
+                if (result && result.user) {
+                    console.log('User signed in via redirect:', result.user.email);
+                    hideLoading();
+                    
+                    currentUser = result.user;
+                    localStorage.setItem('current_user_email', result.user.email);
+                    
+                    // Check if already registered
+                    const userRef = doc(db, 'users', result.user.uid);
+                    const userDoc = await getDoc(userRef);
+                    
+                    if (userDoc.exists() && userDoc.data().registrationComplete) {
+                        console.log('User already registered, redirecting to dashboard...');
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        console.log('Opening registration modal...');
+                        showRegistrationModal(result.user);
+                    }
+                } else {
+                    console.log('No redirect result, showing login page');
+                    hideLoading();
+                }
+            })
+            .catch((error) => {
+                console.error('Error getting redirect result:', error);
+                localStorage.removeItem('pending_mobile_signin');
+                localStorage.removeItem('signin_timestamp');
+                hideLoading();
+                
+                if (error.code === 'auth/unauthorized-domain') {
+                    alert('⚠️ Add your Netlify domain to Firebase Console > Authentication > Authorized domains');
+                } else if (error.code !== 'auth/popup-closed-by-user') {
+                    console.error('Sign-in error:', error.message);
+                }
+            });
+    } else {
+        console.log('Sign-in timestamp expired, clearing flags');
+        localStorage.removeItem('pending_mobile_signin');
+        localStorage.removeItem('signin_timestamp');
+    }
+} else {
+    console.log('No pending mobile sign-in');
+}
 
 // Check authentication state
 onAuthStateChanged(auth, async (user) => {
@@ -117,9 +147,13 @@ googleSignInBtn.addEventListener('click', async () => {
         showLoading();
         
         if (isMobile) {
-            // Mobile: Use redirect
+            // Mobile: Use redirect - Set flag BEFORE redirect
             console.log('Using redirect for mobile');
+            // This flag survives page reload
+            localStorage.setItem('pending_mobile_signin', 'true');
+            localStorage.setItem('signin_timestamp', Date.now().toString());
             await signInWithRedirect(auth, provider);
+            // Note: Page will redirect away and reload when it comes back
         } else {
             // Desktop: Use popup and show modal
             console.log('Using popup for desktop');
@@ -142,6 +176,7 @@ googleSignInBtn.addEventListener('click', async () => {
     } catch (error) {
         console.error('Sign-in error:', error);
         hideLoading();
+        localStorage.removeItem('pending_mobile_signin');
         
         if (error.code !== 'auth/popup-closed-by-user') {
             alert('Sign-in failed. Try Emergency Login.');
