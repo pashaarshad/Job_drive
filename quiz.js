@@ -216,7 +216,7 @@ window.submitQuiz = async function() {
         }
     });
     
-    const percentage = ((score / questions.length) * 100).toFixed(2);
+    const percentage = parseFloat(((score / questions.length) * 100).toFixed(2));
     
     // Mark this quiz as completed
     localStorage.setItem(`user_${currentUser.uid}_quiz_${currentQuizType}_completed`, 'true');
@@ -260,13 +260,13 @@ window.submitQuiz = async function() {
         const leaderboardRef = doc(db, 'leaderboard', `${currentUser.uid}_${Date.now()}`);
         await setDoc(leaderboardRef, {
             uid: currentUser.uid,
-            name: localStorage.getItem(`user_${currentUser.uid}_name`) || currentUser.displayName,
-            email: currentUser.email,
+            name: localStorage.getItem(`user_${currentUser.uid}_name`) || currentUser.displayName || 'Unknown User',
+            email: currentUser.email || 'no-email@local',
             quizType: currentQuizType,
-            score: score,
-            total: questions.length,
-            percentage: percentage,
-            timeTaken: timeTaken,
+            score: parseInt(score),
+            total: parseInt(questions.length),
+            percentage: parseFloat(percentage),
+            timeTaken: parseInt(timeTaken),
             date: new Date()
         });
     } catch (error) {
@@ -276,7 +276,7 @@ window.submitQuiz = async function() {
     // Store results in session storage for results page
     sessionStorage.setItem('lastQuizScore', score.toString());
     sessionStorage.setItem('lastQuizTotal', questions.length.toString());
-    sessionStorage.setItem('lastQuizPercentage', percentage);
+    sessionStorage.setItem('lastQuizPercentage', percentage.toString());
     sessionStorage.setItem('lastQuizTime', timeTaken.toString());
     
     // Wait for 5 seconds before redirecting

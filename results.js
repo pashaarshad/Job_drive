@@ -36,8 +36,12 @@ function loadResults(uid) {
     const lastTime = sessionStorage.getItem('lastQuizTime');
     
     if (lastScore && lastTotal) {
-        document.getElementById('scoreText').textContent = `Score: ${lastScore}/${lastTotal}`;
-        document.getElementById('percentageText').textContent = `Percentage: ${lastPercentage}%`;
+        const scoreNum = parseInt(lastScore);
+        const totalNum = parseInt(lastTotal);
+        const percentNum = parseFloat(lastPercentage);
+        
+        document.getElementById('scoreText').textContent = `Score: ${scoreNum}/${totalNum}`;
+        document.getElementById('percentageText').textContent = `Percentage: ${percentNum.toFixed(2)}%`;
         
         const minutes = Math.floor(lastTime / 60);
         const seconds = lastTime % 60;

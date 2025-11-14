@@ -133,6 +133,12 @@ let currentLeaderboardType = 'it'; // Default to IT Quiz
 async function loadLeaderboard(quizType = 'it') {
     currentLeaderboardType = quizType;
     const leaderboardContainer = document.getElementById('leaderboardContainer');
+    
+    if (!leaderboardContainer) {
+        console.error('Leaderboard container not found');
+        return;
+    }
+    
     leaderboardContainer.innerHTML = '<p style="text-align: center;">Loading leaderboard...</p>';
     
     try {
@@ -148,15 +154,21 @@ async function loadLeaderboard(quizType = 'it') {
         
         // Filter by quiz type
         const filteredData = [];
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            if (data.quizType === quizType) {
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (data && data.quizType === quizType && data.percentage != null) {
+                // Ensure percentage is a number
+                data.percentage = parseFloat(data.percentage);
                 filteredData.push(data);
             }
         });
         
-        // Sort by percentage and take top 10
-        filteredData.sort((a, b) => b.percentage - a.percentage);
+        // Sort by percentage (handle NaN) and take top 10
+        filteredData.sort((a, b) => {
+            const aPerc = isNaN(a.percentage) ? 0 : a.percentage;
+            const bPerc = isNaN(b.percentage) ? 0 : b.percentage;
+            return bPerc - aPerc;
+        });
         const top10 = filteredData.slice(0, 10);
         
         if (top10.length === 0) {
@@ -172,11 +184,14 @@ async function loadLeaderboard(quizType = 'it') {
             leaderboardItem.className = 'leaderboard-item';
             
             const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+            const displayName = data.name || 'Anonymous';
+            const displayPercentage = isNaN(data.percentage) ? '0' : data.percentage.toFixed(2);
+            const isCurrentUser = currentUser && data.uid === currentUser.uid;
             
             leaderboardItem.innerHTML = `
                 <span class="leaderboard-rank">${medal} #${rank}</span>
-                <span class="leaderboard-name">${data.name} ${data.uid === currentUser.uid ? '(You)' : ''}</span>
-                <span class="leaderboard-score">${data.percentage}%</span>
+                <span class="leaderboard-name">${displayName} ${isCurrentUser ? '(You)' : ''}</span>
+                <span class="leaderboard-score">${displayPercentage}%</span>
             `;
             
             leaderboardContainer.appendChild(leaderboardItem);
