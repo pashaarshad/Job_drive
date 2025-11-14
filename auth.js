@@ -154,38 +154,10 @@ googleSignInBtn.addEventListener('click', async () => {
         
         showLoading();
         
-        if (isMobile) {
-            // Mobile: Try popup first, fallback to redirect
-            console.log('Attempting popup for mobile (opens in new tab)');
-            
-            try {
-                // Force popup to open in new tab on mobile
-                const result = await signInWithPopup(auth, provider);
-                hideLoading();
-                
-                currentUser = result.user;
-                localStorage.setItem('current_user_email', result.user.email);
-                
-                // Check if already registered
-                const userRef = doc(db, 'users', result.user.uid);
-                const userDoc = await getDoc(userRef);
-                
-                if (userDoc.exists() && userDoc.data().registrationComplete) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    showRegistrationModal(result.user);
-                }
-            } catch (popupError) {
-                console.log('Popup failed on mobile, using redirect fallback:', popupError);
-                
-                // Fallback to redirect if popup blocked
-                localStorage.setItem('pending_mobile_signin', 'true');
-                localStorage.setItem('signin_timestamp', Date.now().toString());
-                await signInWithRedirect(auth, provider);
-            }
-        } else {
-            // Desktop: Use popup and show modal
-            console.log('Using popup for desktop');
+        // Always try popup first (works on both desktop and modern mobile browsers)
+        console.log('Using popup sign-in');
+        
+        try {
             const result = await signInWithPopup(auth, provider);
             hideLoading();
             
@@ -201,6 +173,15 @@ googleSignInBtn.addEventListener('click', async () => {
             } else {
                 showRegistrationModal(result.user);
             }
+        } catch (popupError) {
+            console.log('Popup failed, using redirect fallback:', popupError);
+            
+            // Only use redirect as fallback
+            if (isMobile) {
+                localStorage.setItem('pending_mobile_signin', 'true');
+                localStorage.setItem('signin_timestamp', Date.now().toString());
+            }
+            await signInWithRedirect(auth, provider);
         }
     } catch (error) {
         console.error('Sign-in error:', error);

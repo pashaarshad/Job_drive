@@ -20,9 +20,10 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Force account selection every time
+// Force account selection and optimize for popup
 provider.setCustomParameters({
-    prompt: 'select_account'
+    prompt: 'select_account',
+    display: 'popup'  // Force popup mode
 });
 
 // Set persistence to LOCAL (persists even after browser is closed)
