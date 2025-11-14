@@ -1,5 +1,5 @@
 // Authentication logic
-import { auth, provider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, doc, setDoc, getDoc, db } from './firebase-config.js';
+import { auth, provider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, doc, setDoc, getDoc, updateDoc, db } from './firebase-config.js';
 
 const googleSignInBtn = document.getElementById('googleSignIn');
 const emergencyLoginBtn = document.getElementById('emergencyLoginBtn');
@@ -235,7 +235,7 @@ function checkUserAttempts(uid) {
 }
 
 // Proceed to quiz selection
-proceedBtn.addEventListener('click', () => {
+proceedBtn.addEventListener('click', async () => {
     const displayName = document.getElementById('displayName').value.trim();
     
     if (!displayName) {
@@ -244,8 +244,59 @@ proceedBtn.addEventListener('click', () => {
     }
     
     if (currentUser) {
-        // Store user name
+        // Store user name in local storage
         localStorage.setItem(`user_${currentUser.uid}_name`, displayName);
+        
+        // Update Firebase if emergency user
+        if (isEmergencyUser) {
+            try {
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    // Update displayName in Firebase
+                    await updateDoc(userRef, {
+                        displayName: displayName,
+                        lastUpdated: new Date()
+                    });
+                    console.log('Emergency user name updated in Firebase:', displayName);
+                } else {
+                    // Create if doesn't exist
+                    await setDoc(userRef, {
+                        uid: currentUser.uid,
+                        email: currentUser.email,
+                        displayName: displayName,
+                        photoURL: currentUser.photoURL,
+                        isEmergency: true,
+                        createdAt: new Date(),
+                        totalAttempts: 0,
+                        quizScores: {
+                            it: [],
+                            accounts: []
+                        }
+                    });
+                    console.log('Emergency user created with name in Firebase:', displayName);
+                }
+            } catch (error) {
+                console.error('Error updating emergency user name in Firebase:', error);
+            }
+        } else {
+            // Update Firebase for Google users too
+            try {
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    await updateDoc(userRef, {
+                        displayName: displayName,
+                        lastUpdated: new Date()
+                    });
+                    console.log('User name updated in Firebase:', displayName);
+                }
+            } catch (error) {
+                console.error('Error updating user name in Firebase:', error);
+            }
+        }
         
         // Proceed to quiz selection
         window.location.href = 'quiz-selection.html';
