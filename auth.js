@@ -155,13 +155,34 @@ googleSignInBtn.addEventListener('click', async () => {
         showLoading();
         
         if (isMobile) {
-            // Mobile: Use redirect - Set flag BEFORE redirect
-            console.log('Using redirect for mobile');
-            // This flag survives page reload
-            localStorage.setItem('pending_mobile_signin', 'true');
-            localStorage.setItem('signin_timestamp', Date.now().toString());
-            await signInWithRedirect(auth, provider);
-            // Note: Page will redirect away and reload when it comes back
+            // Mobile: Try popup first, fallback to redirect
+            console.log('Attempting popup for mobile (opens in new tab)');
+            
+            try {
+                // Force popup to open in new tab on mobile
+                const result = await signInWithPopup(auth, provider);
+                hideLoading();
+                
+                currentUser = result.user;
+                localStorage.setItem('current_user_email', result.user.email);
+                
+                // Check if already registered
+                const userRef = doc(db, 'users', result.user.uid);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists() && userDoc.data().registrationComplete) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    showRegistrationModal(result.user);
+                }
+            } catch (popupError) {
+                console.log('Popup failed on mobile, using redirect fallback:', popupError);
+                
+                // Fallback to redirect if popup blocked
+                localStorage.setItem('pending_mobile_signin', 'true');
+                localStorage.setItem('signin_timestamp', Date.now().toString());
+                await signInWithRedirect(auth, provider);
+            }
         } else {
             // Desktop: Use popup and show modal
             console.log('Using popup for desktop');
