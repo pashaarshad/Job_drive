@@ -43,10 +43,13 @@ function hideLoading() {
 }
 
 // Check for redirect result (important for mobile)
+console.log('Checking for redirect result on page load...');
 showLoading(); // Show loading while checking for redirect
 getRedirectResult(auth)
     .then(async (result) => {
+        console.log('Redirect result:', result);
         if (result && result.user) {
+            console.log('User signed in via redirect:', result.user.email);
             const user = result.user;
             
             // Initialize user in Firestore if new
@@ -54,6 +57,7 @@ getRedirectResult(auth)
             const userDoc = await getDoc(userRef);
             
             if (!userDoc.exists()) {
+                console.log('Creating new user in Firestore...');
                 await setDoc(userRef, {
                     uid: user.uid,
                     email: user.email,
@@ -66,19 +70,45 @@ getRedirectResult(auth)
                         accounts: []
                     }
                 });
+                console.log('User created successfully');
+            } else {
+                console.log('User already exists in Firestore');
             }
             
             // Store user email
             localStorage.setItem('current_user_email', user.email);
+        } else {
+            console.log('No redirect result found');
         }
     })
     .catch((error) => {
         console.error('Error getting redirect result:', error);
-        if (error.code !== 'auth/popup-closed-by-user') {
-            alert('Sign-in failed. Please try again.');
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        
+        // Only show alert for actual errors, not cancelled operations
+        if (error.code !== 'auth/popup-closed-by-user' && 
+            error.code !== 'auth/cancelled-popup-request' &&
+            error.code !== 'auth/network-request-failed') {
+            
+            // Show more specific error message
+            let errorMessage = 'Sign-in failed. ';
+            
+            if (error.code === 'auth/unauthorized-domain') {
+                errorMessage += 'Your Netlify domain needs to be authorized in Firebase Console. Please add your domain to Firebase Authentication settings.';
+            } else if (error.code === 'auth/operation-not-allowed') {
+                errorMessage += 'Google sign-in is not enabled. Please enable it in Firebase Console.';
+            } else if (error.code === 'auth/internal-error') {
+                errorMessage += 'Internal error. Please check your Firebase configuration.';
+            } else {
+                errorMessage += 'Please try again or use Emergency Login.';
+            }
+            
+            alert(errorMessage);
         }
     })
     .finally(() => {
+        console.log('Redirect check completed');
         hideLoading(); // Hide loading after checking redirect
     });
 
@@ -117,18 +147,35 @@ googleSignInBtn.addEventListener('click', async () => {
     try {
         const isMobile = isMobileDevice();
         
+        console.log('Sign-in button clicked');
+        console.log('Is mobile device:', isMobile);
+        
         showLoading(); // Show loading indicator
         
         if (isMobile) {
             // Use redirect for mobile devices (more reliable)
             console.log('Using redirect sign-in for mobile');
-            await signInWithRedirect(auth, provider);
-            // Note: Page will redirect, loading will be shown until then
+            try {
+                await signInWithRedirect(auth, provider);
+                console.log('Redirect initiated');
+                // Note: Page will redirect, loading will be shown until then
+            } catch (redirectError) {
+                console.error('Redirect error:', redirectError);
+                hideLoading();
+                
+                if (redirectError.code === 'auth/unauthorized-domain') {
+                    alert('⚠️ Domain Authorization Required\n\nYour Netlify domain needs to be added to Firebase:\n\n1. Go to Firebase Console\n2. Authentication > Settings > Authorized domains\n3. Add your Netlify domain\n\nOr use Emergency Login with password: ROOT');
+                } else {
+                    alert('Failed to sign in: ' + (redirectError.message || 'Unknown error') + '\n\nTry using Emergency Login with password: ROOT');
+                }
+            }
         } else {
             // Use popup for desktop (better UX)
             console.log('Using popup sign-in for desktop');
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
+            
+            console.log('Popup sign-in successful:', user.email);
             
             // Initialize user in Firestore if new
             const userRef = doc(db, 'users', user.uid);
@@ -155,12 +202,22 @@ googleSignInBtn.addEventListener('click', async () => {
         }
     } catch (error) {
         console.error('Error signing in:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
         hideLoading(); // Hide loading on error
         
         // Don't show error if user closed popup
         if (error.code !== 'auth/popup-closed-by-user' && 
             error.code !== 'auth/cancelled-popup-request') {
-            alert('Failed to sign in. Please try again.');
+            
+            let errorMsg = 'Failed to sign in. ';
+            if (error.code === 'auth/unauthorized-domain') {
+                errorMsg = '⚠️ Your Netlify domain is not authorized.\n\nAdd your domain to Firebase Console > Authentication > Settings > Authorized domains\n\nOr use Emergency Login (password: ROOT)';
+            } else {
+                errorMsg += error.message || 'Please try again or use Emergency Login.';
+            }
+            
+            alert(errorMsg);
         }
     }
 });
