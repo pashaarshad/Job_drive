@@ -1,13 +1,79 @@
 // Authentication logic
-import { auth, provider, signInWithPopup, onAuthStateChanged, doc, setDoc, getDoc, db } from './firebase-config.js';
+import { auth, provider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, doc, setDoc, getDoc, db } from './firebase-config.js';
 
 const googleSignInBtn = document.getElementById('googleSignIn');
 const userInfoDiv = document.getElementById('userInfo');
 const nameSection = document.getElementById('nameSection');
 const proceedBtn = document.getElementById('proceedBtn');
-const attemptsInfo = document.getElementById('attemptsInfo');
+const loadingIndicator = document.getElementById('loadingIndicator');
 
 let currentUser = null;
+
+// Detect if on mobile device
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (window.innerWidth <= 768);
+}
+
+// Show loading indicator
+function showLoading() {
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'block';
+    }
+    if (googleSignInBtn) {
+        googleSignInBtn.style.display = 'none';
+    }
+}
+
+// Hide loading indicator
+function hideLoading() {
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+    }
+    if (googleSignInBtn && !currentUser) {
+        googleSignInBtn.style.display = 'flex';
+    }
+}
+
+// Check for redirect result (important for mobile)
+showLoading(); // Show loading while checking for redirect
+getRedirectResult(auth)
+    .then(async (result) => {
+        if (result && result.user) {
+            const user = result.user;
+            
+            // Initialize user in Firestore if new
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (!userDoc.exists()) {
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    createdAt: new Date(),
+                    totalAttempts: 0,
+                    quizScores: {
+                        it: [],
+                        accounts: []
+                    }
+                });
+            }
+            
+            // Store user email
+            localStorage.setItem('current_user_email', user.email);
+        }
+    })
+    .catch((error) => {
+        console.error('Error getting redirect result:', error);
+        if (error.code !== 'auth/popup-closed-by-user') {
+            alert('Sign-in failed. Please try again.');
+        }
+    })
+    .finally(() => {
+        hideLoading(); // Hide loading after checking redirect
+    });
 
 // Check authentication state
 onAuthStateChanged(auth, async (user) => {
@@ -42,40 +108,53 @@ onAuthStateChanged(auth, async (user) => {
 // Google Sign-In
 googleSignInBtn.addEventListener('click', async () => {
     try {
-        // Force account selection on every sign-in
-        provider.setCustomParameters({
-            prompt: 'select_account'
-        });
+        const isMobile = isMobileDevice();
         
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+        showLoading(); // Show loading indicator
         
-        // Initialize user in Firestore if new
-        const userRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userRef);
-        
-        if (!userDoc.exists()) {
-            await setDoc(userRef, {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                createdAt: new Date(),
-                totalAttempts: 0,
-                remainingAttempts: 1,
-                quizScores: {
-                    it: [],
-                    accounts: []
-                }
-            });
+        if (isMobile) {
+            // Use redirect for mobile devices (more reliable)
+            console.log('Using redirect sign-in for mobile');
+            await signInWithRedirect(auth, provider);
+            // Note: Page will redirect, loading will be shown until then
+        } else {
+            // Use popup for desktop (better UX)
+            console.log('Using popup sign-in for desktop');
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
             
-            // Initialize local storage
-            localStorage.setItem(`user_${user.uid}_attempts`, '1');
-            localStorage.setItem(`user_${user.uid}_total`, '0');
+            // Initialize user in Firestore if new
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (!userDoc.exists()) {
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    createdAt: new Date(),
+                    totalAttempts: 0,
+                    quizScores: {
+                        it: [],
+                        accounts: []
+                    }
+                });
+            }
+            
+            // Store user email
+            localStorage.setItem('current_user_email', user.email);
+            hideLoading();
         }
     } catch (error) {
         console.error('Error signing in:', error);
-        alert('Failed to sign in. Please try again.');
+        hideLoading(); // Hide loading on error
+        
+        // Don't show error if user closed popup
+        if (error.code !== 'auth/popup-closed-by-user' && 
+            error.code !== 'auth/cancelled-popup-request') {
+            alert('Failed to sign in. Please try again.');
+        }
     }
 });
 
