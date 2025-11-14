@@ -7,14 +7,21 @@ const emergencyModal = document.getElementById('emergencyModal');
 const emergencySubmit = document.getElementById('emergencySubmit');
 const emergencyPassword = document.getElementById('emergencyPassword');
 const emergencyError = document.getElementById('emergencyError');
-const closeModal = document.querySelector('.close-modal');
+const closeEmergency = document.getElementById('closeEmergency');
 const userInfoDiv = document.getElementById('userInfo');
 const nameSection = document.getElementById('nameSection');
-const proceedBtn = document.getElementById('proceedBtn');
 const loadingIndicator = document.getElementById('loadingIndicator');
+
+// Registration modal elements
+const registrationModal = document.getElementById('registrationModal');
+const regUserPhoto = document.getElementById('regUserPhoto');
+const regUserEmail = document.getElementById('regUserEmail');
+const regDisplayName = document.getElementById('regDisplayName');
+const completeRegBtn = document.getElementById('completeRegBtn');
 
 let currentUser = null;
 let isEmergencyUser = false;
+let pendingRegistration = false;
 
 // Detect if on mobile device
 function isMobileDevice() {
@@ -44,113 +51,60 @@ function hideLoading() {
 
 // Check for redirect result (important for mobile)
 console.log('Checking for redirect result on page load...');
+showLoading();
 
-// Mark that we're checking for redirect to avoid infinite loops
-const isCheckingRedirect = sessionStorage.getItem('checking_redirect');
-if (isCheckingRedirect === 'true') {
-    console.log('Already checked redirect, skipping...');
-    hideLoading();
-} else {
-    sessionStorage.setItem('checking_redirect', 'true');
-    showLoading(); // Show loading while checking for redirect
-    
-    getRedirectResult(auth)
-        .then(async (result) => {
-            console.log('Redirect result:', result);
-            if (result && result.user) {
-                console.log('User signed in via redirect:', result.user.email);
-                const user = result.user;
-                
-                // Initialize user in Firestore if new
-                const userRef = doc(db, 'users', user.uid);
-                const userDoc = await getDoc(userRef);
-                
-                if (!userDoc.exists()) {
-                    console.log('Creating new user in Firestore...');
-                    await setDoc(userRef, {
-                        uid: user.uid,
-                        email: user.email,
-                        displayName: user.displayName,
-                        photoURL: user.photoURL,
-                        createdAt: new Date(),
-                        totalAttempts: 0,
-                        quizScores: {
-                            it: [],
-                            accounts: []
-                        }
-                    });
-                    console.log('User created successfully');
-                } else {
-                    console.log('User already exists in Firestore');
-                }
-                
-                // Store user email
-                localStorage.setItem('current_user_email', user.email);
-                
-                // Redirect to registration page
-                console.log('Redirecting to registration page...');
-                window.location.href = 'register.html';
-                
-                // Clear the checking flag
-                sessionStorage.removeItem('checking_redirect');
+getRedirectResult(auth)
+    .then(async (result) => {
+        console.log('Redirect result:', result);
+        if (result && result.user) {
+            console.log('User signed in via redirect:', result.user.email);
+            hideLoading();
+            
+            currentUser = result.user;
+            localStorage.setItem('current_user_email', result.user.email);
+            
+            // Check if already registered
+            const userRef = doc(db, 'users', result.user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (userDoc.exists() && userDoc.data().registrationComplete) {
+                console.log('User already registered, redirecting to dashboard...');
+                window.location.href = 'dashboard.html';
             } else {
-                console.log('No redirect result found');
-                sessionStorage.removeItem('checking_redirect');
+                console.log('Opening registration modal...');
+                showRegistrationModal(result.user);
             }
-        })
-        .catch((error) => {
-            console.error('Error getting redirect result:', error);
-            console.error('Error code:', error.code);
-            console.error('Error message:', error.message);
-            
-            // Clear the checking flag on error
-            sessionStorage.removeItem('checking_redirect');
-            
-            // Only show alert for actual errors, not cancelled operations
-            if (error.code !== 'auth/popup-closed-by-user' && 
-                error.code !== 'auth/cancelled-popup-request' &&
-                error.code !== 'auth/network-request-failed') {
-                
-                // Show more specific error message
-                let errorMessage = 'Sign-in failed. ';
-                
-                if (error.code === 'auth/unauthorized-domain') {
-                    errorMessage += 'Your Netlify domain needs to be authorized in Firebase Console. Please add your domain to Firebase Authentication settings.';
-                } else if (error.code === 'auth/operation-not-allowed') {
-                    errorMessage += 'Google sign-in is not enabled. Please enable it in Firebase Console.';
-                } else if (error.code === 'auth/internal-error') {
-                    errorMessage += 'Internal error. Please check your Firebase configuration.';
-                } else {
-                    errorMessage += 'Please try again or use Emergency Login.';
-                }
-                
-                alert(errorMessage);
-            }
-        })
-        .finally(() => {
-            console.log('Redirect check completed');
-            sessionStorage.removeItem('checking_redirect');
-            hideLoading(); // Hide loading after checking redirect
-        });
-}
+        } else {
+            console.log('No redirect result');
+            hideLoading();
+        }
+    })
+    .catch((error) => {
+        console.error('Error getting redirect result:', error);
+        hideLoading();
+        
+        if (error.code === 'auth/unauthorized-domain') {
+            alert('⚠️ Add your Netlify domain to Firebase Console > Authentication > Authorized domains');
+        } else if (error.code !== 'auth/popup-closed-by-user') {
+            console.error('Sign-in error:', error.message);
+        }
+    });
 
 // Check authentication state
 onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        console.log('User authenticated, redirecting to registration page...');
+    if (user && !pendingRegistration) {
+        console.log('User authenticated:', user.email);
         currentUser = user;
-        
-        // Store current user email for watermark
         localStorage.setItem('current_user_email', user.email);
         
-        // Redirect to registration page to complete profile
-        window.location.href = 'register.html';
-    } else {
-        googleSignInBtn.style.display = 'flex';
-        if (emergencyLoginBtn) emergencyLoginBtn.style.display = 'flex';
-        userInfoDiv.style.display = 'none';
-        nameSection.style.display = 'none';
-        localStorage.removeItem('current_user_email');
+        // Check if registration is complete
+        const userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists() && userDoc.data().registrationComplete) {
+            console.log('Registration complete, going to dashboard');
+            window.location.href = 'dashboard.html';
+        }
     }
 });
 
@@ -158,83 +112,102 @@ onAuthStateChanged(auth, async (user) => {
 googleSignInBtn.addEventListener('click', async () => {
     try {
         const isMobile = isMobileDevice();
+        console.log('Sign-in clicked, mobile:', isMobile);
         
-        console.log('Sign-in button clicked');
-        console.log('Is mobile device:', isMobile);
-        
-        showLoading(); // Show loading indicator
+        showLoading();
         
         if (isMobile) {
-            // Use redirect for mobile devices (more reliable)
-            console.log('Using redirect sign-in for mobile');
-            try {
-                // Clear any previous redirect check flags
-                sessionStorage.removeItem('checking_redirect');
-                
-                // Initiate redirect
-                await signInWithRedirect(auth, provider);
-                console.log('Redirect initiated');
-                // Note: Page will redirect, loading will be shown until then
-            } catch (redirectError) {
-                console.error('Redirect error:', redirectError);
-                hideLoading();
-                
-                if (redirectError.code === 'auth/unauthorized-domain') {
-                    alert('⚠️ Domain Authorization Required\n\nYour Netlify domain needs to be added to Firebase:\n\n1. Go to Firebase Console\n2. Authentication > Settings > Authorized domains\n3. Add your Netlify domain\n\nOr use Emergency Login with password: ROOT');
-                } else {
-                    alert('Failed to sign in: ' + (redirectError.message || 'Unknown error') + '\n\nTry using Emergency Login with password: ROOT');
-                }
-            }
+            // Mobile: Use redirect
+            console.log('Using redirect for mobile');
+            await signInWithRedirect(auth, provider);
         } else {
-            // Use popup for desktop (better UX)
-            console.log('Using popup sign-in for desktop');
+            // Desktop: Use popup and show modal
+            console.log('Using popup for desktop');
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;
+            hideLoading();
             
-            console.log('Popup sign-in successful:', user.email);
+            currentUser = result.user;
+            localStorage.setItem('current_user_email', result.user.email);
             
-            // Initialize user in Firestore if new
-            const userRef = doc(db, 'users', user.uid);
+            // Check if already registered
+            const userRef = doc(db, 'users', result.user.uid);
             const userDoc = await getDoc(userRef);
             
-            if (!userDoc.exists()) {
-                await setDoc(userRef, {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL,
-                    createdAt: new Date(),
-                    totalAttempts: 0,
-                    quizScores: {
-                        it: [],
-                        accounts: []
-                    }
-                });
+            if (userDoc.exists() && userDoc.data().registrationComplete) {
+                window.location.href = 'dashboard.html';
+            } else {
+                showRegistrationModal(result.user);
             }
-            
-            // Store user email
-            localStorage.setItem('current_user_email', user.email);
-            hideLoading();
         }
     } catch (error) {
-        console.error('Error signing in:', error);
-        console.error('Error code:', error.code);
-        console.error('Error message:', error.message);
-        hideLoading(); // Hide loading on error
+        console.error('Sign-in error:', error);
+        hideLoading();
         
-        // Don't show error if user closed popup
-        if (error.code !== 'auth/popup-closed-by-user' && 
-            error.code !== 'auth/cancelled-popup-request') {
-            
-            let errorMsg = 'Failed to sign in. ';
-            if (error.code === 'auth/unauthorized-domain') {
-                errorMsg = '⚠️ Your Netlify domain is not authorized.\n\nAdd your domain to Firebase Console > Authentication > Settings > Authorized domains\n\nOr use Emergency Login (password: ROOT)';
-            } else {
-                errorMsg += error.message || 'Please try again or use Emergency Login.';
-            }
-            
-            alert(errorMsg);
+        if (error.code !== 'auth/popup-closed-by-user') {
+            alert('Sign-in failed. Try Emergency Login.');
         }
+    }
+});
+
+// Show registration modal
+function showRegistrationModal(user) {
+    pendingRegistration = true;
+    currentUser = user;
+    
+    regUserPhoto.src = user.photoURL || 'https://via.placeholder.com/80';
+    regUserEmail.textContent = user.email;
+    regDisplayName.value = user.displayName || '';
+    
+    registrationModal.style.display = 'flex';
+    setTimeout(() => regDisplayName.focus(), 100);
+}
+
+// Complete registration from modal
+completeRegBtn.addEventListener('click', async () => {
+    const displayName = regDisplayName.value.trim();
+    
+    if (!displayName) {
+        alert('Please enter your name');
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userRef);
+        
+        const userData = {
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName: displayName,
+            photoURL: currentUser.photoURL,
+            registrationComplete: true,
+            isEmergency: isEmergencyUser,
+            createdAt: new Date(),
+            totalAttempts: 0,
+            quizScores: { it: [], accounts: [] }
+        };
+        
+        if (userDoc.exists()) {
+            await updateDoc(userRef, {
+                displayName: displayName,
+                registrationComplete: true,
+                lastUpdated: new Date()
+            });
+        } else {
+            await setDoc(userRef, userData);
+        }
+        
+        localStorage.setItem(`user_${currentUser.uid}_name`, displayName);
+        
+        console.log('Registration complete, redirecting...');
+        window.location.href = 'dashboard.html';
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        hideLoading();
+        alert('Registration failed. Please try again.');
     }
 });
 
@@ -246,14 +219,8 @@ emergencyLoginBtn.addEventListener('click', () => {
     setTimeout(() => emergencyPassword.focus(), 100);
 });
 
-closeModal.addEventListener('click', () => {
+closeEmergency.addEventListener('click', () => {
     emergencyModal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === emergencyModal) {
-        emergencyModal.style.display = 'none';
-    }
 });
 
 // Emergency password submission
@@ -287,10 +254,12 @@ emergencySubmit.addEventListener('click', async () => {
         localStorage.setItem('emergency_user', 'true');
         localStorage.setItem('emergency_user_id', emergencyUserId);
         
-        console.log('Emergency user created, redirecting to registration page...');
+        currentUser = emergencyUserData;
+        isEmergencyUser = true;
         
-        // Redirect to registration page
-        window.location.href = 'register.html';
+        // Close emergency modal and show registration modal
+        emergencyModal.style.display = 'none';
+        showRegistrationModal(emergencyUserData);
         
     } else {
         emergencyError.textContent = '❌ Incorrect password. Please try again.';

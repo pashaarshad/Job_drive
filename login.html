@@ -44,12 +44,26 @@
             <!-- Emergency Login Modal -->
             <div id="emergencyModal" class="modal" style="display: none;">
                 <div class="modal-content">
-                    <span class="close-modal">&times;</span>
+                    <span class="close-modal" id="closeEmergency">&times;</span>
                     <h2>🔒 Emergency Login</h2>
                     <p>Enter the emergency password</p>
                     <input type="password" id="emergencyPassword" placeholder="Enter password" autocomplete="off">
                     <button id="emergencySubmit" class="btn-primary">Login</button>
                     <p class="error-message" id="emergencyError" style="display: none; color: red; margin-top: 10px;"></p>
+                </div>
+            </div>
+            
+            <!-- Registration Modal (for mobile) -->
+            <div id="registrationModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h2>✏️ Complete Registration</h2>
+                    <p>Please enter your name to continue</p>
+                    <div id="regUserInfo" style="margin: 20px 0; text-align: center;">
+                        <img id="regUserPhoto" src="" alt="User" style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto; display: block;">
+                        <p id="regUserEmail" style="color: #666; margin-top: 10px;"></p>
+                    </div>
+                    <input type="text" id="regDisplayName" placeholder="Enter your full name" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em; margin-bottom: 15px;">
+                    <button id="completeRegBtn" class="btn-primary" style="width: 100%;">Complete Registration</button>
                 </div>
             </div>
 
