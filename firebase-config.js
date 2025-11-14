@@ -1,16 +1,17 @@
-// Firebase Configuration (You will replace this with your own config)
+// Firebase Configuration - Updated with your actual config
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-// TODO: Replace with your Firebase config
+// Your Firebase configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDcZKNY52xo0YVhhTrT2NyGGozE4Rsiq5I",
+    authDomain: "job-drive-10358.firebaseapp.com",
+    projectId: "job-drive-10358",
+    storageBucket: "job-drive-10358.firebasestorage.app",
+    messagingSenderId: "771346415784",
+    appId: "1:771346415784:web:2a1e4820053a998f13c29d",
+    measurementId: "G-2M9V0KBSHF"
 };
 
 // Initialize Firebase
