@@ -2,6 +2,31 @@
 (function() {
     'use strict';
     
+    // Warning counters - limit alerts to 2 times only
+    let warningCounts = {
+        screenshot: 0,
+        print: 0,
+        copy: 0,
+        devtools: 0,
+        tabSwitch: 0
+    };
+    
+    const MAX_WARNINGS = 2;
+    
+    function showWarning(type, message) {
+        if (warningCounts[type] < MAX_WARNINGS) {
+            warningCounts[type]++;
+            alert(`⚠️ Warning ${warningCounts[type]}/${MAX_WARNINGS}: ${message}`);
+            
+            if (warningCounts[type] === MAX_WARNINGS) {
+                console.warn(`Final warning for ${type}. Further attempts will be silently logged.`);
+            }
+        } else {
+            // Silent logging after max warnings
+            console.warn(`${type} attempt detected (warning limit reached)`);
+        }
+    }
+    
     // Prevent right-click context menu
     document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
@@ -10,54 +35,54 @@
     
     // Prevent keyboard shortcuts for screenshots and developer tools
     document.addEventListener('keydown', function(e) {
-        // Prevent F12 (Developer Tools)
+        // Prevent F12 (Developer Tools) - no alert, just block
         if (e.keyCode === 123) {
             e.preventDefault();
             return false;
         }
         
-        // Prevent Ctrl+Shift+I (Developer Tools)
+        // Prevent Ctrl+Shift+I (Developer Tools) - no alert, just block
         if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
             e.preventDefault();
             return false;
         }
         
-        // Prevent Ctrl+Shift+J (Console)
+        // Prevent Ctrl+Shift+J (Console) - no alert, just block
         if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
             e.preventDefault();
             return false;
         }
         
-        // Prevent Ctrl+U (View Source)
+        // Prevent Ctrl+U (View Source) - no alert, just block
         if (e.ctrlKey && e.keyCode === 85) {
             e.preventDefault();
             return false;
         }
         
-        // Prevent Ctrl+S (Save Page)
+        // Prevent Ctrl+S (Save Page) - no alert, just block
         if (e.ctrlKey && e.keyCode === 83) {
             e.preventDefault();
             return false;
         }
         
-        // Prevent PrintScreen
+        // Prevent PrintScreen - show warning
         if (e.keyCode === 44) {
             e.preventDefault();
-            alert('Screenshots are not allowed during the quiz!');
+            showWarning('screenshot', 'Screenshots are not allowed during the quiz!');
             return false;
         }
         
-        // Prevent Ctrl+P (Print)
+        // Prevent Ctrl+P (Print) - show warning
         if (e.ctrlKey && e.keyCode === 80) {
             e.preventDefault();
-            alert('Printing is not allowed during the quiz!');
+            showWarning('print', 'Printing is not allowed during the quiz!');
             return false;
         }
         
-        // Prevent Windows Key + Shift + S (Windows Screenshot Tool)
+        // Prevent Windows Key + Shift + S (Windows Screenshot Tool) - show warning
         if (e.shiftKey && e.keyCode === 83 && (e.metaKey || e.key === 'Meta')) {
             e.preventDefault();
-            alert('Screenshots are not allowed during the quiz!');
+            showWarning('screenshot', 'Screenshots are not allowed during the quiz!');
             return false;
         }
     });
@@ -74,29 +99,24 @@
         return false;
     });
     
-    // Detect when user switches tabs or minimizes window
-    let quizWarningShown = false;
+    // Detect when user switches tabs or minimizes window - limited warnings
     document.addEventListener('visibilitychange', function() {
         if (document.hidden && window.location.pathname.includes('quiz.html')) {
-            if (!quizWarningShown) {
-                quizWarningShown = true;
-                alert('Warning: Tab switching detected! This activity is being monitored.');
-            }
+            showWarning('tabSwitch', 'Tab switching detected! This activity is being monitored.');
         }
     });
     
-    // Detect when window loses focus
+    // Detect when window loses focus - limited warnings
     window.addEventListener('blur', function() {
-        if (window.location.pathname.includes('quiz.html') && !quizWarningShown) {
-            quizWarningShown = true;
-            console.log('Warning: Window focus lost during quiz');
+        if (window.location.pathname.includes('quiz.html') && warningCounts.tabSwitch < MAX_WARNINGS) {
+            console.warn('Window focus lost during quiz - logged');
         }
     });
     
-    // Prevent copying text
+    // Prevent copying text - show warning
     document.addEventListener('copy', function(e) {
         e.preventDefault();
-        alert('Copying text is not allowed!');
+        showWarning('copy', 'Copying text is not allowed!');
         return false;
     });
     
@@ -136,17 +156,19 @@
         addWatermark();
     }
     
-    // Detect if developer tools are open
+    // Detect if developer tools are open - NO ALERTS, just silent logging
     const devtools = /./;
     devtools.toString = function() {
-        quizWarningShown = true;
-        alert('Developer tools detected! This activity is being monitored.');
-        return 'Developer tools detected';
+        if (warningCounts.devtools < MAX_WARNINGS) {
+            warningCounts.devtools++;
+            console.warn(`Developer tools detected (${warningCounts.devtools}/${MAX_WARNINGS})`);
+        }
+        return 'devtools';
     };
     
-    // Check periodically
+    // Check periodically - silent
     setInterval(function() {
         console.log(devtools);
-    }, 1000);
+    }, 3000);
     
 })();
