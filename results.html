@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - Quiz Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Quiz Results</h1>
+        </header>
+
+        <section class="results-section">
+            <div class="result-card">
+                <h2>🎉 Congratulations!</h2>
+                <div class="score-display">
+                    <h3 id="scoreText">Score: 0/40</h3>
+                    <h3 id="percentageText">Percentage: 0%</h3>
+                    <h3 id="timeText">Time Taken: 00:00</h3>
+                </div>
+
+                <div class="result-message" id="resultMessage">
+                    <!-- Dynamic message based on score -->
+                </div>
+
+                <div class="attempts-remaining">
+                    <p>Remaining Attempts: <span id="remainingAttempts">3</span></p>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button onclick="viewDashboard()" class="btn-primary">View Dashboard</button>
+                <button onclick="takeAnotherQuiz()" class="btn-secondary">Take Another Quiz</button>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="results.js"></script>
+</body>
+</html>

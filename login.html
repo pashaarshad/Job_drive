@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Quiz Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <h1>Welcome to Quiz Platform</h1>
+            <p>Please sign in to continue</p>
+            
+            <div id="userInfo" style="display: none;">
+                <img id="userPhoto" src="" alt="User Photo">
+                <h3 id="userName"></h3>
+                <p id="userEmail"></p>
+            </div>
+
+            <button id="googleSignIn" class="btn-google">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+                Sign in with Google
+            </button>
+
+            <div id="nameSection" style="display: none;">
+                <input type="text" id="displayName" placeholder="Enter your name" required>
+                <button id="proceedBtn" class="btn-primary">Proceed to Quiz Selection</button>
+            </div>
+
+            <p class="info-text" id="attemptsInfo"></p>
+        </div>
+    </div>
+
+    <script type="module" src="auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Selection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Select Your Quiz</h1>
+            <div class="user-header">
+                <span id="welcomeUser"></span>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </header>
+
+        <div class="attempts-info">
+            <p>Remaining Attempts: <span id="remainingAttempts">3</span></p>
+        </div>
+
+        <section class="quiz-options">
+            <div class="quiz-card" onclick="selectQuiz('it')">
+                <div class="quiz-icon">💻</div>
+                <h2>IT Quiz</h2>
+                <p>Java MCQs - 40 Questions</p>
+                <button class="btn-select">Start IT Quiz</button>
+            </div>
+
+            <div class="quiz-card" onclick="selectQuiz('accounts')">
+                <div class="quiz-icon">📊</div>
+                <h2>Accountancy Quiz</h2>
+                <p>Accounts Aptitude - 40 Questions</p>
+                <button class="btn-select">Start Accounts Quiz</button>
+            </div>
+        </section>
+
+        <div class="dashboard-link">
+            <button onclick="viewDashboard()" class="btn-secondary">View Dashboard</button>
+        </div>
+    </div>
+
+    <script type="module" src="quiz-selection.js"></script>
+</body>
+</html>

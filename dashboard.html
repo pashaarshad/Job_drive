@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Quiz Dashboard</h1>
+            <div class="user-header">
+                <span id="welcomeUser"></span>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </header>
+
+        <section class="dashboard-content">
+            <div class="stats-card">
+                <h2>Your Statistics</h2>
+                <div class="stat-item">
+                    <span class="stat-label">Total Attempts:</span>
+                    <span class="stat-value" id="totalAttempts">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Remaining Attempts:</span>
+                    <span class="stat-value" id="remainingAttempts">3</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">IT Quiz Score:</span>
+                    <span class="stat-value" id="itScore">Not Attempted</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Accounts Quiz Score:</span>
+                    <span class="stat-value" id="accountsScore">Not Attempted</span>
+                </div>
+            </div>
+
+            <div class="history-card">
+                <h2>Quiz History</h2>
+                <div id="historyContainer" class="history-list"></div>
+            </div>
+
+            <div class="leaderboard-card">
+                <h2>🏆 Top Rankers</h2>
+                <div id="leaderboardContainer" class="leaderboard-list"></div>
+            </div>
+        </section>
+
+        <div class="action-buttons">
+            <button onclick="goToQuizSelection()" class="btn-primary">Take Another Quiz</button>
+        </div>
+    </div>
+
+    <script type="module" src="dashboard.js"></script>
+</body>
+</html>

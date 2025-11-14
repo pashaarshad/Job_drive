@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="quiz-header">
+            <h1 id="quizTitle">Quiz</h1>
+            <div class="quiz-info">
+                <span id="questionCounter">Question 1 of 40</span>
+                <span id="timer">Time: 00:00</span>
+            </div>
+        </header>
+
+        <div class="quiz-container">
+            <div class="question-section">
+                <h2 id="questionText"></h2>
+                <div id="optionsContainer" class="options-container"></div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button onclick="previousQuestion()" id="prevBtn" class="btn-nav" disabled>Previous</button>
+                <button onclick="nextQuestion()" id="nextBtn" class="btn-nav">Next</button>
+                <button onclick="submitQuiz()" id="submitBtn" class="btn-submit" style="display: none;">Submit Quiz</button>
+            </div>
+
+            <div class="question-palette">
+                <h3>Question Palette</h3>
+                <div id="palette" class="palette-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="quiz.js"></script>
+</body>
+</html>
