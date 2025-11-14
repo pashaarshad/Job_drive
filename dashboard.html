@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -19,14 +21,6 @@
         <section class="dashboard-content">
             <div class="stats-card">
                 <h2>Your Statistics</h2>
-                <div class="stat-item">
-                    <span class="stat-label">Total Attempts:</span>
-                    <span class="stat-value" id="totalAttempts">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Remaining Attempts:</span>
-                    <span class="stat-value" id="remainingAttempts">1</span>
-                </div>
                 <div class="stat-item">
                     <span class="stat-label">IT Quiz Score:</span>
                     <span class="stat-value" id="itScore">Not Attempted</span>
@@ -48,11 +42,13 @@
             </div>
         </section>
 
-        <div class="action-buttons">
-            <button onclick="goToQuizSelection()" class="btn-primary">Take Another Quiz</button>
+        <div class="action-buttons" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+            <button onclick="takeQuiz('it')" class="btn-primary" id="itQuizBtn">Take IT Quiz 💻</button>
+            <button onclick="takeQuiz('accounts')" class="btn-primary" id="accountsQuizBtn">Take Accountancy Quiz 📊</button>
         </div>
     </div>
 
+    <script src="security.js"></script>
     <script type="module" src="dashboard.js"></script>
 </body>
 </html>

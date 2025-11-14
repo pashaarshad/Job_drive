@@ -21,10 +21,6 @@ onAuthStateChanged(auth, async (user) => {
 async function loadDashboard(uid) {
     // Load statistics from local storage
     const totalAttempts = localStorage.getItem(`user_${uid}_total`) || '0';
-    const remainingAttempts = localStorage.getItem(`user_${uid}_attempts`) || '1';
-    
-    document.getElementById('totalAttempts').textContent = totalAttempts;
-    document.getElementById('remainingAttempts').textContent = remainingAttempts;
     
     // Load IT Quiz scores
     const itQuizHistory = JSON.parse(localStorage.getItem(`user_${uid}_quiz_it`) || '[]');
@@ -46,11 +42,36 @@ async function loadDashboard(uid) {
             `${bestAccounts.score}/${bestAccounts.total} (${bestAccounts.percentage}%)`;
     }
     
+    // Update quiz button states
+    updateQuizButtons(uid);
+    
     // Load quiz history
     loadQuizHistory(uid, itQuizHistory, accountsQuizHistory);
     
     // Load leaderboard from Firebase
     await loadLeaderboard();
+}
+
+function updateQuizButtons(uid) {
+    const itCompleted = localStorage.getItem(`user_${uid}_quiz_it_completed`) === 'true';
+    const accountsCompleted = localStorage.getItem(`user_${uid}_quiz_accounts_completed`) === 'true';
+    
+    const itBtn = document.getElementById('itQuizBtn');
+    const accountsBtn = document.getElementById('accountsQuizBtn');
+    
+    if (itCompleted) {
+        itBtn.disabled = true;
+        itBtn.textContent = 'IT Quiz Completed ✓';
+        itBtn.style.opacity = '0.6';
+        itBtn.style.cursor = 'not-allowed';
+    }
+    
+    if (accountsCompleted) {
+        accountsBtn.disabled = true;
+        accountsBtn.textContent = 'Accountancy Quiz Completed ✓';
+        accountsBtn.style.opacity = '0.6';
+        accountsBtn.style.cursor = 'not-allowed';
+    }
 }
 
 function loadQuizHistory(uid, itHistory, accountsHistory) {
@@ -127,6 +148,28 @@ async function loadLeaderboard() {
         leaderboardContainer.innerHTML = '<p style="text-align: center; color: red;">Failed to load leaderboard.</p>';
     }
 }
+
+window.takeQuiz = function(quizType) {
+    if (!currentUser) {
+        alert('Please log in first!');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Check if this specific quiz is already completed
+    const quizCompleted = localStorage.getItem(`user_${currentUser.uid}_quiz_${quizType}_completed`) === 'true';
+    
+    if (quizCompleted) {
+        alert('You have already completed this quiz!');
+        return;
+    }
+    
+    // Store selected quiz type
+    sessionStorage.setItem('selectedQuiz', quizType);
+    
+    // Redirect to quiz page
+    window.location.href = 'quiz.html';
+};
 
 window.goToQuizSelection = function() {
     window.location.href = 'quiz-selection.html';

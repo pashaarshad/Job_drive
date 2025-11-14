@@ -33,10 +33,6 @@ function loadResults(uid) {
         displayResultMessage(parseFloat(lastPercentage));
     }
     
-    // Update remaining attempts
-    const remainingAttempts = localStorage.getItem(`user_${uid}_attempts`) || '3';
-    document.getElementById('remainingAttempts').textContent = remainingAttempts;
-    
     // Clear session storage
     sessionStorage.removeItem('lastQuizScore');
     sessionStorage.removeItem('lastQuizTotal');
@@ -74,12 +70,20 @@ window.viewDashboard = function() {
 };
 
 window.takeAnotherQuiz = function() {
-    const remainingAttempts = parseInt(localStorage.getItem(`user_${currentUser.uid}_attempts`) || '0');
+    if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+    }
     
-    if (remainingAttempts > 0) {
-        window.location.href = 'quiz-selection.html';
+    // Check if both quizzes are completed
+    const itCompleted = localStorage.getItem(`user_${currentUser.uid}_quiz_it_completed`) === 'true';
+    const accountsCompleted = localStorage.getItem(`user_${currentUser.uid}_quiz_accounts_completed`) === 'true';
+    
+    if (itCompleted && accountsCompleted) {
+        alert('You have completed both quizzes! View the leaderboard on the dashboard.');
+        window.location.href = 'dashboard.html';
     } else {
-        alert('You have no remaining attempts!');
+        // Go to dashboard where they can choose available quiz
         window.location.href = 'dashboard.html';
     }
 };

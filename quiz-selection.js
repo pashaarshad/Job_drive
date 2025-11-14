@@ -18,18 +18,24 @@ onAuthStateChanged(auth, (user) => {
 });
 
 function updateAttemptsDisplay(uid) {
-    const attempts = localStorage.getItem(`user_${uid}_attempts`) || '1';
-    document.getElementById('remainingAttempts').textContent = attempts;
+    // Check which quizzes are completed
+    const itCompleted = localStorage.getItem(`user_${uid}_quiz_it_completed`) === 'true';
+    const accountsCompleted = localStorage.getItem(`user_${uid}_quiz_accounts_completed`) === 'true';
     
-    if (parseInt(attempts) <= 0) {
-        // Disable quiz cards
-        const quizCards = document.querySelectorAll('.quiz-card');
-        quizCards.forEach(card => {
-            card.style.opacity = '0.5';
-            card.style.pointerEvents = 'none';
-        });
-        
-        alert('You have exhausted all your attempts!');
+    const quizCards = document.querySelectorAll('.quiz-card');
+    
+    // Disable IT quiz if completed
+    if (itCompleted) {
+        quizCards[0].style.opacity = '0.5';
+        quizCards[0].style.pointerEvents = 'none';
+        quizCards[0].querySelector('.btn-select').textContent = 'Completed';
+    }
+    
+    // Disable Accounts quiz if completed
+    if (accountsCompleted) {
+        quizCards[1].style.opacity = '0.5';
+        quizCards[1].style.pointerEvents = 'none';
+        quizCards[1].querySelector('.btn-select').textContent = 'Completed';
     }
 }
 
@@ -40,10 +46,12 @@ window.selectQuiz = function(quizType) {
         return;
     }
     
-    const attempts = parseInt(localStorage.getItem(`user_${currentUser.uid}_attempts`) || '1');
+    // Check if this specific quiz is already completed
+    const quizCompleted = localStorage.getItem(`user_${currentUser.uid}_quiz_${quizType}_completed`) === 'true';
     
-    if (attempts <= 0) {
-        alert('You have no remaining attempts!');
+    if (quizCompleted) {
+        alert('You have already completed this quiz! View the leaderboard on the dashboard.');
+        window.location.href = 'dashboard.html';
         return;
     }
     

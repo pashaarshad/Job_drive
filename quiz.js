@@ -21,11 +21,11 @@ onAuthStateChanged(auth, (user) => {
             return;
         }
         
-        // Check attempts
-        const attempts = parseInt(localStorage.getItem(`user_${user.uid}_attempts`) || '1');
-        if (attempts <= 0) {
-            alert('No attempts remaining!');
-            window.location.href = 'quiz-selection.html';
+        // Check if this quiz is already completed
+        const quizCompleted = localStorage.getItem(`user_${user.uid}_quiz_${currentQuizType}_completed`) === 'true';
+        if (quizCompleted) {
+            alert('You have already completed this quiz!');
+            window.location.href = 'dashboard.html';
             return;
         }
         
@@ -179,10 +179,8 @@ window.submitQuiz = async function() {
     
     const percentage = ((score / questions.length) * 100).toFixed(2);
     
-    // Update attempts in local storage
-    const currentAttempts = parseInt(localStorage.getItem(`user_${currentUser.uid}_attempts`) || '3');
-    const newAttempts = currentAttempts - 1;
-    localStorage.setItem(`user_${currentUser.uid}_attempts`, newAttempts.toString());
+    // Mark this quiz as completed
+    localStorage.setItem(`user_${currentUser.uid}_quiz_${currentQuizType}_completed`, 'true');
     
     const totalAttempts = parseInt(localStorage.getItem(`user_${currentUser.uid}_total`) || '0');
     localStorage.setItem(`user_${currentUser.uid}_total`, (totalAttempts + 1).toString());
@@ -213,7 +211,6 @@ window.submitQuiz = async function() {
             quizScores[currentQuizType].push(quizResult);
             
             await updateDoc(userRef, {
-                remainingAttempts: newAttempts,
                 totalAttempts: totalAttempts + 1,
                 quizScores: quizScores,
                 lastAttemptDate: new Date()

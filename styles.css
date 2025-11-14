@@ -9,6 +9,17 @@ body {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     min-height: 100vh;
     padding: 20px;
+    /* Disable text selection */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent screenshots and screen recording */
+    -webkit-touch-callout: none;
+    /* Better touch scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Remove tap highlight on mobile */
+    -webkit-tap-highlight-color: transparent;
 }
 
 .container {
@@ -19,6 +30,14 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     padding: 40px;
     animation: fadeIn 0.5s ease-in;
+}
+
+/* Ensure all buttons are touch-friendly */
+button, .btn-start, .btn-google, .btn-primary, .btn-secondary, 
+.btn-select, .btn-nav, .btn-submit, .btn-logout, .btn-dashboard,
+.btn-pdf-download, a.btn-pdf-download {
+    min-height: 44px; /* iOS recommended touch target size */
+    touch-action: manipulation; /* Improve touch responsiveness */
 }
 
 @keyframes fadeIn {
@@ -116,6 +135,42 @@ header h1 {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6);
     background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+}
+
+.btn-pdf-download {
+    display: inline-block;
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1em;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.btn-pdf-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.5);
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+}
+
+.emergency-download {
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Login Page Styles */
@@ -363,6 +418,8 @@ header h1 {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-height: 50px; /* Better touch target */
+    font-size: 1em;
 }
 
 .option:hover {
@@ -375,6 +432,10 @@ header h1 {
     background: #007bff;
     color: white;
     font-weight: 600;
+}
+
+.option:active {
+    transform: scale(0.98);
 }
 
 .navigation-buttons {
@@ -690,55 +751,362 @@ header h1 {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
     .container {
-        padding: 20px;
+        padding: 15px;
+        max-width: 100%;
+    }
+
+    header {
+        padding: 20px 15px;
+        margin-bottom: 20px;
     }
 
     header h1 {
-        font-size: 1.8em;
-    }
-
-    .recruitment-info {
-        grid-template-columns: 1fr;
-    }
-
-    .quiz-options {
-        grid-template-columns: 1fr;
+        font-size: 1.5em;
+        line-height: 1.3;
     }
 
     .user-header {
         position: static;
-        justify-content: center;
-        margin-top: 20px;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 15px;
+        width: 100%;
     }
 
+    .user-header span {
+        font-size: 0.9em;
+    }
+
+    .btn-logout {
+        width: 100%;
+        padding: 8px 20px;
+    }
+
+    /* Landing Page */
+    .recruitment-info {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .category {
+        padding: 20px;
+    }
+
+    .category h2 {
+        font-size: 1.3em;
+    }
+
+    .category h3 {
+        font-size: 1.1em;
+    }
+
+    .category p {
+        font-size: 0.9em;
+    }
+
+    .start-section {
+        margin-top: 30px;
+    }
+
+    .btn-start {
+        width: 100%;
+        padding: 15px 30px;
+        font-size: 1em;
+    }
+
+    .btn-pdf-download {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 0.95em;
+        display: block;
+    }
+
+    .emergency-download p {
+        font-size: 0.85em;
+    }
+
+    /* Login Page */
+    .login-box {
+        padding: 30px 20px;
+        margin: 20px auto;
+    }
+
+    .login-box h1 {
+        font-size: 1.5em;
+    }
+
+    .btn-google {
+        padding: 12px 20px;
+        font-size: 0.95em;
+    }
+
+    #userPhoto {
+        width: 60px;
+        height: 60px;
+    }
+
+    #nameSection input {
+        padding: 12px;
+        font-size: 0.95em;
+    }
+
+    /* Quiz Selection */
+    .quiz-options {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .quiz-card {
+        padding: 25px 20px;
+    }
+
+    .quiz-icon {
+        font-size: 3em;
+    }
+
+    .quiz-card h2 {
+        font-size: 1.4em;
+    }
+
+    .btn-select, .btn-secondary, .btn-primary {
+        padding: 12px 25px;
+        font-size: 1em;
+        width: 100%;
+    }
+
+    /* Quiz Page */
     .quiz-header {
         flex-direction: column;
         gap: 15px;
+        align-items: flex-start;
     }
 
     .quiz-info {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
+        width: 100%;
+        font-size: 0.95em;
+    }
+
+    .quiz-container {
+        gap: 20px;
+    }
+
+    .question-section {
+        padding: 20px 15px;
+    }
+
+    .question-section h2 {
+        font-size: 1.1em;
+        line-height: 1.5;
+    }
+
+    .options-container {
+        gap: 12px;
+    }
+
+    .option {
+        padding: 15px;
+        font-size: 1em;
+        min-height: 54px; /* Larger touch target on mobile */
+        line-height: 1.4;
     }
 
     .navigation-buttons {
         flex-direction: column;
+        gap: 12px;
     }
 
+    .btn-nav, .btn-submit {
+        padding: 15px 20px;
+        font-size: 1.05em;
+        min-height: 50px;
+    }
+
+    .question-palette {
+        padding: 15px;
+        margin-top: 20px;
+    }
+
+    .question-palette h3 {
+        font-size: 1em;
+    }
+
+    .palette-container {
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+        gap: 8px;
+    }
+
+    .palette-item {
+        width: 40px;
+        height: 40px;
+        font-size: 0.9em;
+    }
+
+    /* Dashboard */
+    .dashboard-content {
+        gap: 20px;
+    }
+
+    .stats-card, .history-card, .leaderboard-card {
+        padding: 20px 15px;
+    }
+
+    .stats-card h2, .history-card h2, .leaderboard-card h2 {
+        font-size: 1.3em;
+    }
+
+    .stat-item {
+        padding: 12px;
+        font-size: 0.95em;
+    }
+
+    .stat-value {
+        font-size: 1.1em;
+    }
+
+    .history-item {
+        padding: 12px;
+    }
+
+    .history-item h4 {
+        font-size: 1em;
+    }
+
+    .history-item p {
+        font-size: 0.85em;
+    }
+
+    .leaderboard-item {
+        padding: 12px 15px;
+        font-size: 0.95em;
+    }
+
+    .leaderboard-rank {
+        font-size: 1.2em;
+        min-width: 35px;
+    }
+
+    .leaderboard-score {
+        font-size: 1.1em;
+    }
+
+    .action-buttons {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    /* Results Page */
     .result-card {
-        padding: 30px 20px;
+        padding: 25px 15px;
     }
 
-    .result-card h2 {
-        font-size: 2em;
+    .result-card h1, .result-card h2 {
+        font-size: 1.5em;
+    }
+
+    .score-display {
+        padding: 20px 15px;
     }
 
     .score-display h3 {
-        font-size: 1.2em;
+        font-size: 1.1em;
+        margin: 10px 0;
+    }
+
+    .result-message {
+        padding: 20px 15px;
+    }
+
+    .result-message h2 {
+        font-size: 2.5em;
     }
 
     .result-message p {
+        font-size: 1em;
+    }
+
+    .result-details {
+        font-size: 1em;
+    }
+
+    .result-details p {
+        padding: 12px;
+    }
+
+    .result-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-dashboard {
+        padding: 12px 25px;
+        font-size: 1em;
+    }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    header {
+        padding: 15px 10px;
+    }
+
+    header h1 {
+        font-size: 1.2em;
+    }
+
+    .category {
+        padding: 15px;
+    }
+
+    .category h2 {
         font-size: 1.1em;
+    }
+
+    .category h3 {
+        font-size: 1em;
+    }
+
+    .login-box {
+        padding: 20px 15px;
+    }
+
+    .login-box h1 {
+        font-size: 1.3em;
+    }
+
+    .quiz-card {
+        padding: 20px 15px;
+    }
+
+    .quiz-icon {
+        font-size: 2.5em;
+    }
+
+    .question-section h2 {
+        font-size: 1em;
+    }
+
+    .palette-container {
+        grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+    }
+
+    .palette-item {
+        width: 35px;
+        height: 35px;
+        font-size: 0.85em;
     }
 }

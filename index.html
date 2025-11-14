@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Direct Company Recruitment</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -29,9 +31,21 @@
 
         <div class="start-section">
             <button onclick="startQuiz()" class="btn-start">Start Quiz</button>
+            
+            <div class="emergency-download" style="margin-top: 30px; text-align: center;">
+                <p style="color: white; font-size: 0.9em; margin-bottom: 10px; opacity: 0.9;">
+                    Emergency Access: Download Questions PDF
+                </p>
+                <a href="Accounts Aptitude Questions- Pooja Santhosh Shetty.pdf" 
+                   download="Accounts_Aptitude_Questions.pdf"
+                   class="btn-pdf-download">
+                    📄 Download Accounts Aptitude PDF
+                </a>
+            </div>
         </div>
     </div>
 
+    <script src="security.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

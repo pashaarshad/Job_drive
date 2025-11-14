@@ -13,6 +13,10 @@ let currentUser = null;
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
+        
+        // Store current user email for watermark
+        localStorage.setItem('current_user_email', user.email);
+        
         googleSignInBtn.style.display = 'none';
         userInfoDiv.style.display = 'block';
         
@@ -25,17 +29,24 @@ onAuthStateChanged(auth, async (user) => {
         
         // Show name input section
         nameSection.style.display = 'block';
-        document.getElementById('displayName').value = user.displayName || '';
+        document.getElementById('displayName').value = 
+            localStorage.getItem(`user_${user.uid}_name`) || user.displayName || '';
     } else {
         googleSignInBtn.style.display = 'flex';
         userInfoDiv.style.display = 'none';
         nameSection.style.display = 'none';
+        localStorage.removeItem('current_user_email');
     }
 });
 
 // Google Sign-In
 googleSignInBtn.addEventListener('click', async () => {
     try {
+        // Force account selection on every sign-in
+        provider.setCustomParameters({
+            prompt: 'select_account'
+        });
+        
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
         
@@ -70,16 +81,13 @@ googleSignInBtn.addEventListener('click', async () => {
 
 // Check user attempts
 function checkUserAttempts(uid) {
-    const attempts = localStorage.getItem(`user_${uid}_attempts`) || '1';
-    const total = localStorage.getItem(`user_${uid}_total`) || '0';
+    // Check if both quizzes are completed
+    const itCompleted = localStorage.getItem(`user_${uid}_quiz_it_completed`) === 'true';
+    const accountsCompleted = localStorage.getItem(`user_${uid}_quiz_accounts_completed`) === 'true';
     
-    if (parseInt(attempts) <= 0) {
-        attemptsInfo.textContent = 'You have already taken your quiz attempt. No more attempts available.';
-        attemptsInfo.style.color = 'red';
+    if (itCompleted && accountsCompleted) {
+        // Both quizzes completed, disable proceed button
         proceedBtn.disabled = true;
-    } else {
-        attemptsInfo.textContent = `You have ${attempts} attempt remaining.`;
-        attemptsInfo.style.color = 'green';
     }
 }
 
@@ -96,13 +104,7 @@ proceedBtn.addEventListener('click', () => {
         // Store user name
         localStorage.setItem(`user_${currentUser.uid}_name`, displayName);
         
-        // Check attempts one more time
-        const attempts = parseInt(localStorage.getItem(`user_${currentUser.uid}_attempts`) || '3');
-        
-        if (attempts > 0) {
-            window.location.href = 'quiz-selection.html';
-        } else {
-            alert('You have exhausted all your attempts!');
-        }
+        // Proceed to quiz selection
+        window.location.href = 'quiz-selection.html';
     }
 });

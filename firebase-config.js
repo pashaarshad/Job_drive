@@ -1,6 +1,6 @@
 // Firebase Configuration - Updated with your actual config
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Your Firebase configuration
@@ -19,5 +19,14 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
+
+// Set persistence to LOCAL (persists even after browser is closed)
+setPersistence(auth, browserLocalPersistence)
+    .then(() => {
+        console.log('Auth persistence set to LOCAL');
+    })
+    .catch((error) => {
+        console.error('Error setting auth persistence:', error);
+    });
 
 export { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, doc, setDoc, getDoc, updateDoc };
