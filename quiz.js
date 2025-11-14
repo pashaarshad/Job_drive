@@ -22,7 +22,7 @@ onAuthStateChanged(auth, (user) => {
         }
         
         // Check attempts
-        const attempts = parseInt(localStorage.getItem(`user_${user.uid}_attempts`) || '3');
+        const attempts = parseInt(localStorage.getItem(`user_${user.uid}_attempts`) || '1');
         if (attempts <= 0) {
             alert('No attempts remaining!');
             window.location.href = 'quiz-selection.html';

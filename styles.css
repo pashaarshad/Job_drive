@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     min-height: 100vh;
     padding: 20px;
 }
@@ -39,7 +39,7 @@ header {
 }
 
 header h1 {
-    color: #667eea;
+    color: #1e3c72;
     font-size: 2.5em;
     margin-bottom: 10px;
     text-transform: uppercase;
@@ -68,20 +68,21 @@ header h1 {
 }
 
 .category {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #1e3c72;
 }
 
 .category h2 {
-    color: #667eea;
+    color: #1e3c72;
     font-size: 1.5em;
     margin-bottom: 15px;
 }
 
 .category h3 {
-    color: #764ba2;
+    color: #dc3545;
     margin: 15px 0;
     font-size: 1.2em;
 }
@@ -98,14 +99,14 @@ header h1 {
 }
 
 .btn-start {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
     border: none;
     padding: 20px 60px;
     font-size: 1.3em;
     border-radius: 50px;
     cursor: pointer;
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
     transition: all 0.3s ease;
     font-weight: 600;
     text-transform: uppercase;
@@ -113,7 +114,8 @@ header h1 {
 
 .btn-start:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6);
+    background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
 }
 
 /* Login Page Styles */
@@ -125,7 +127,7 @@ header h1 {
 }
 
 .login-box h1 {
-    color: #667eea;
+    color: #1e3c72;
     margin-bottom: 10px;
 }
 
@@ -136,7 +138,7 @@ header h1 {
 
 .btn-google {
     background: white;
-    border: 2px solid #ddd;
+    border: 2px solid #1e3c72;
     padding: 15px 30px;
     font-size: 1.1em;
     border-radius: 8px;
@@ -157,15 +159,17 @@ header h1 {
 }
 
 .btn-google:hover {
-    border-color: #667eea;
-    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    border-color: #1e3c72;
+    background: #f8f9fa;
+    box-shadow: 0 3px 10px rgba(30, 60, 114, 0.3);
 }
 
 #userInfo {
     margin: 20px 0;
     padding: 20px;
-    background: #f5f7fa;
+    background: #f8f9fa;
     border-radius: 10px;
+    border: 2px solid #1e3c72;
 }
 
 #userPhoto {
@@ -173,6 +177,7 @@ header h1 {
     height: 80px;
     border-radius: 50%;
     margin-bottom: 10px;
+    border: 3px solid #1e3c72;
 }
 
 #nameSection {
@@ -184,7 +189,7 @@ header h1 {
     max-width: 400px;
     padding: 15px;
     font-size: 1.1em;
-    border: 2px solid #ddd;
+    border: 2px solid #1e3c72;
     border-radius: 8px;
     margin-bottom: 20px;
 }
@@ -219,18 +224,20 @@ header h1 {
 }
 
 .quiz-card {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     padding: 40px;
     border-radius: 15px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 3px solid transparent;
 }
 
 .quiz-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border-color: #1e3c72;
 }
 
 .quiz-icon {
@@ -239,7 +246,7 @@ header h1 {
 }
 
 .quiz-card h2 {
-    color: #667eea;
+    color: #1e3c72;
     margin-bottom: 10px;
     font-size: 1.8em;
 }
@@ -250,7 +257,7 @@ header h1 {
 }
 
 .btn-select {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
     border: none;
     padding: 15px 40px;
@@ -263,6 +270,7 @@ header h1 {
 
 .btn-select:hover {
     transform: scale(1.05);
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
 }
 
 .dashboard-link {
@@ -300,6 +308,7 @@ header h1 {
 
 .btn-logout:hover {
     background: #c82333;
+    transform: translateY(-2px);
 }
 
 /* Quiz Page Styles */
@@ -309,7 +318,7 @@ header h1 {
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 3px solid #1e3c72;
 }
 
 .quiz-info {
@@ -317,7 +326,7 @@ header h1 {
     gap: 30px;
     font-size: 1.1em;
     font-weight: 600;
-    color: #666;
+    color: #1e3c72;
 }
 
 .quiz-container {
@@ -326,9 +335,10 @@ header h1 {
 }
 
 .question-section {
-    background: #f5f7fa;
+    background: #f8f9fa;
     padding: 30px;
     border-radius: 10px;
+    border: 2px solid #e9ecef;
 }
 
 .question-section h2 {
@@ -348,7 +358,7 @@ header h1 {
     padding: 15px 20px;
     border-radius: 8px;
     cursor: pointer;
-    border: 2px solid #ddd;
+    border: 2px solid #dee2e6;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -356,13 +366,13 @@ header h1 {
 }
 
 .option:hover {
-    border-color: #667eea;
-    background: #f0f4ff;
+    border-color: #007bff;
+    background: #e7f3ff;
 }
 
 .option.selected {
-    border-color: #667eea;
-    background: #667eea;
+    border-color: #007bff;
+    background: #007bff;
     color: white;
     font-weight: 600;
 }
@@ -376,7 +386,7 @@ header h1 {
 
 .btn-nav {
     flex: 1;
-    background: #667eea;
+    background: #007bff;
     color: white;
     border: none;
     padding: 15px 30px;
@@ -388,7 +398,7 @@ header h1 {
 }
 
 .btn-nav:hover:not(:disabled) {
-    background: #5568d3;
+    background: #0056b3;
 }
 
 .btn-nav:disabled {
@@ -414,13 +424,14 @@ header h1 {
 }
 
 .question-palette {
-    background: #f5f7fa;
+    background: #f8f9fa;
     padding: 20px;
     border-radius: 10px;
+    border: 2px solid #e9ecef;
 }
 
 .question-palette h3 {
-    color: #667eea;
+    color: #1e3c72;
     margin-bottom: 15px;
 }
 
@@ -436,7 +447,7 @@ header h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #ddd;
+    border: 2px solid #dee2e6;
     border-radius: 8px;
     cursor: pointer;
     background: white;
@@ -455,9 +466,9 @@ header h1 {
 }
 
 .palette-item.current {
-    background: #667eea;
+    background: #007bff;
     color: white;
-    border-color: #667eea;
+    border-color: #007bff;
 }
 
 /* Dashboard Styles */
@@ -468,14 +479,15 @@ header h1 {
 }
 
 .stats-card, .history-card, .leaderboard-card {
-    background: #f5f7fa;
+    background: white;
     padding: 30px;
-    border-radius: 10px;
+    border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 2px solid #e9ecef;
 }
 
 .stats-card h2, .history-card h2, .leaderboard-card h2 {
-    color: #667eea;
+    color: #1e3c72;
     margin-bottom: 20px;
     font-size: 1.5em;
 }
@@ -483,18 +495,21 @@ header h1 {
 .stat-item {
     display: flex;
     justify-content: space-between;
-    padding: 15px 0;
-    border-bottom: 1px solid #ddd;
+    padding: 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
 }
 
 .stat-label {
     font-weight: 600;
-    color: #666;
+    color: #495057;
 }
 
 .stat-value {
     font-weight: 700;
-    color: #667eea;
+    color: #007bff;
     font-size: 1.2em;
 }
 
@@ -504,19 +519,20 @@ header h1 {
 }
 
 .history-item {
-    background: white;
+    background: #f8f9fa;
     padding: 15px;
     border-radius: 8px;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #007bff;
+    border: 2px solid #e9ecef;
 }
 
 .history-item h4 {
-    color: #333;
+    color: #1e3c72;
     margin-bottom: 5px;
 }
 
 .history-item p {
-    color: #666;
+    color: #6c757d;
     font-size: 0.9em;
 }
 
@@ -526,25 +542,40 @@ header h1 {
 }
 
 .leaderboard-item {
-    background: white;
+    background: #f8f9fa;
     padding: 15px 20px;
     border-radius: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
 }
 
 .leaderboard-item:hover {
     transform: translateX(5px);
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    border-color: #007bff;
+    background: #e7f3ff;
 }
 
 .leaderboard-rank {
     font-size: 1.5em;
     font-weight: 700;
-    color: #667eea;
+    color: #007bff;
     min-width: 40px;
+}
+
+.leaderboard-item:nth-child(1) .leaderboard-rank {
+    color: #ffd700;
+}
+
+.leaderboard-item:nth-child(2) .leaderboard-rank {
+    color: #c0c0c0;
+}
+
+.leaderboard-item:nth-child(3) .leaderboard-rank {
+    color: #cd7f32;
 }
 
 .leaderboard-name {
@@ -565,7 +596,7 @@ header h1 {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
     border: none;
     padding: 15px 40px;
@@ -578,7 +609,7 @@ header h1 {
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
 }
 
 /* Results Page Styles */
@@ -588,37 +619,41 @@ header h1 {
 }
 
 .result-card {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: white;
     padding: 50px;
     border-radius: 15px;
     margin-bottom: 40px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 3px solid #1e3c72;
 }
 
 .result-card h2 {
-    color: #667eea;
+    color: #1e3c72;
     font-size: 2.5em;
     margin-bottom: 30px;
 }
 
 .score-display {
-    background: white;
+    background: #f8f9fa;
     padding: 30px;
     border-radius: 10px;
     margin: 30px 0;
+    border: 2px solid #e9ecef;
 }
 
 .score-display h3 {
-    color: #333;
+    color: #007bff;
     margin: 15px 0;
     font-size: 1.5em;
+    font-weight: 700;
 }
 
 .result-message {
     margin: 30px 0;
     padding: 30px;
-    background: white;
+    background: #f8f9fa;
     border-radius: 10px;
+    border: 2px solid #e9ecef;
 }
 
 .result-message h2 {
@@ -628,7 +663,7 @@ header h1 {
 
 .result-message p {
     font-size: 1.3em;
-    color: #666;
+    color: #495057;
     font-weight: 600;
     line-height: 1.6;
 }
@@ -649,7 +684,7 @@ header h1 {
 }
 
 .attempts-remaining span {
-    color: #d93025;
+    color: #dc3545;
     font-size: 1.4em;
 }
 

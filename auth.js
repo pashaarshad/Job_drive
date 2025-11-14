@@ -51,7 +51,7 @@ googleSignInBtn.addEventListener('click', async () => {
                 photoURL: user.photoURL,
                 createdAt: new Date(),
                 totalAttempts: 0,
-                remainingAttempts: 3,
+                remainingAttempts: 1,
                 quizScores: {
                     it: [],
                     accounts: []
@@ -59,7 +59,7 @@ googleSignInBtn.addEventListener('click', async () => {
             });
             
             // Initialize local storage
-            localStorage.setItem(`user_${user.uid}_attempts`, '3');
+            localStorage.setItem(`user_${user.uid}_attempts`, '1');
             localStorage.setItem(`user_${user.uid}_total`, '0');
         }
     } catch (error) {
@@ -70,15 +70,15 @@ googleSignInBtn.addEventListener('click', async () => {
 
 // Check user attempts
 function checkUserAttempts(uid) {
-    const attempts = localStorage.getItem(`user_${uid}_attempts`) || '3';
+    const attempts = localStorage.getItem(`user_${uid}_attempts`) || '1';
     const total = localStorage.getItem(`user_${uid}_total`) || '0';
     
     if (parseInt(attempts) <= 0) {
-        attemptsInfo.textContent = 'You have exhausted all 3 attempts. No more quizzes available.';
+        attemptsInfo.textContent = 'You have already taken your quiz attempt. No more attempts available.';
         attemptsInfo.style.color = 'red';
         proceedBtn.disabled = true;
     } else {
-        attemptsInfo.textContent = `You have ${attempts} attempt(s) remaining out of 3.`;
+        attemptsInfo.textContent = `You have ${attempts} attempt remaining.`;
         attemptsInfo.style.color = 'green';
     }
 }

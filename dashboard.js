@@ -21,7 +21,7 @@ onAuthStateChanged(auth, async (user) => {
 async function loadDashboard(uid) {
     // Load statistics from local storage
     const totalAttempts = localStorage.getItem(`user_${uid}_total`) || '0';
-    const remainingAttempts = localStorage.getItem(`user_${uid}_attempts`) || '3';
+    const remainingAttempts = localStorage.getItem(`user_${uid}_attempts`) || '1';
     
     document.getElementById('totalAttempts').textContent = totalAttempts;
     document.getElementById('remainingAttempts').textContent = remainingAttempts;

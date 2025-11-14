@@ -18,7 +18,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 function updateAttemptsDisplay(uid) {
-    const attempts = localStorage.getItem(`user_${uid}_attempts`) || '3';
+    const attempts = localStorage.getItem(`user_${uid}_attempts`) || '1';
     document.getElementById('remainingAttempts').textContent = attempts;
     
     if (parseInt(attempts) <= 0) {
@@ -40,7 +40,7 @@ window.selectQuiz = function(quizType) {
         return;
     }
     
-    const attempts = parseInt(localStorage.getItem(`user_${currentUser.uid}_attempts`) || '3');
+    const attempts = parseInt(localStorage.getItem(`user_${currentUser.uid}_attempts`) || '1');
     
     if (attempts <= 0) {
         alert('You have no remaining attempts!');
