@@ -87,6 +87,10 @@ if (isCheckingRedirect === 'true') {
                 // Store user email
                 localStorage.setItem('current_user_email', user.email);
                 
+                // Redirect to registration page
+                console.log('Redirecting to registration page...');
+                window.location.href = 'register.html';
+                
                 // Clear the checking flag
                 sessionStorage.removeItem('checking_redirect');
             } else {
@@ -133,26 +137,14 @@ if (isCheckingRedirect === 'true') {
 // Check authentication state
 onAuthStateChanged(auth, async (user) => {
     if (user) {
+        console.log('User authenticated, redirecting to registration page...');
         currentUser = user;
         
         // Store current user email for watermark
         localStorage.setItem('current_user_email', user.email);
         
-        googleSignInBtn.style.display = 'none';
-        if (emergencyLoginBtn) emergencyLoginBtn.style.display = 'none';
-        userInfoDiv.style.display = 'block';
-        
-        document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/80';
-        document.getElementById('userName').textContent = user.displayName;
-        document.getElementById('userEmail').textContent = user.email;
-        
-        // Check local storage for attempts
-        checkUserAttempts(user.uid);
-        
-        // Show name input section
-        nameSection.style.display = 'block';
-        document.getElementById('displayName').value = 
-            localStorage.getItem(`user_${user.uid}_name`) || user.displayName || '';
+        // Redirect to registration page to complete profile
+        window.location.href = 'register.html';
     } else {
         googleSignInBtn.style.display = 'flex';
         if (emergencyLoginBtn) emergencyLoginBtn.style.display = 'flex';
@@ -246,87 +238,6 @@ googleSignInBtn.addEventListener('click', async () => {
     }
 });
 
-// Check user attempts
-function checkUserAttempts(uid) {
-    // Check if both quizzes are completed
-    const itCompleted = localStorage.getItem(`user_${uid}_quiz_it_completed`) === 'true';
-    const accountsCompleted = localStorage.getItem(`user_${uid}_quiz_accounts_completed`) === 'true';
-    
-    if (itCompleted && accountsCompleted) {
-        // Both quizzes completed, disable proceed button
-        proceedBtn.disabled = true;
-    }
-}
-
-// Proceed to quiz selection
-proceedBtn.addEventListener('click', async () => {
-    const displayName = document.getElementById('displayName').value.trim();
-    
-    if (!displayName) {
-        alert('Please enter your name to continue.');
-        return;
-    }
-    
-    if (currentUser) {
-        // Store user name in local storage
-        localStorage.setItem(`user_${currentUser.uid}_name`, displayName);
-        
-        // Update Firebase if emergency user
-        if (isEmergencyUser) {
-            try {
-                const userRef = doc(db, 'users', currentUser.uid);
-                const userDoc = await getDoc(userRef);
-                
-                if (userDoc.exists()) {
-                    // Update displayName in Firebase
-                    await updateDoc(userRef, {
-                        displayName: displayName,
-                        lastUpdated: new Date()
-                    });
-                    console.log('Emergency user name updated in Firebase:', displayName);
-                } else {
-                    // Create if doesn't exist
-                    await setDoc(userRef, {
-                        uid: currentUser.uid,
-                        email: currentUser.email,
-                        displayName: displayName,
-                        photoURL: currentUser.photoURL,
-                        isEmergency: true,
-                        createdAt: new Date(),
-                        totalAttempts: 0,
-                        quizScores: {
-                            it: [],
-                            accounts: []
-                        }
-                    });
-                    console.log('Emergency user created with name in Firebase:', displayName);
-                }
-            } catch (error) {
-                console.error('Error updating emergency user name in Firebase:', error);
-            }
-        } else {
-            // Update Firebase for Google users too
-            try {
-                const userRef = doc(db, 'users', currentUser.uid);
-                const userDoc = await getDoc(userRef);
-                
-                if (userDoc.exists()) {
-                    await updateDoc(userRef, {
-                        displayName: displayName,
-                        lastUpdated: new Date()
-                    });
-                    console.log('User name updated in Firebase:', displayName);
-                }
-            } catch (error) {
-                console.error('Error updating user name in Firebase:', error);
-            }
-        }
-        
-        // Proceed to quiz selection
-        window.location.href = 'quiz-selection.html';
-    }
-});
-
 // Emergency Login Modal
 emergencyLoginBtn.addEventListener('click', () => {
     emergencyModal.style.display = 'flex';
@@ -376,45 +287,10 @@ emergencySubmit.addEventListener('click', async () => {
         localStorage.setItem('emergency_user', 'true');
         localStorage.setItem('emergency_user_id', emergencyUserId);
         
-        // Initialize Firebase data for emergency user
-        try {
-            const userRef = doc(db, 'users', emergencyUserId);
-            const userDoc = await getDoc(userRef);
-            
-            if (!userDoc.exists()) {
-                await setDoc(userRef, {
-                    uid: emergencyUserId,
-                    email: emergencyUserData.email,
-                    displayName: emergencyUserData.displayName,
-                    photoURL: emergencyUserData.photoURL,
-                    isEmergency: true,
-                    createdAt: new Date(),
-                    totalAttempts: 0,
-                    quizScores: {
-                        it: [],
-                        accounts: []
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Error creating emergency user in Firebase:', error);
-        }
+        console.log('Emergency user created, redirecting to registration page...');
         
-        // Update UI
-        emergencyModal.style.display = 'none';
-        googleSignInBtn.style.display = 'none';
-        emergencyLoginBtn.style.display = 'none';
-        userInfoDiv.style.display = 'block';
-        nameSection.style.display = 'block';
-        
-        document.getElementById('userPhoto').src = emergencyUserData.photoURL;
-        document.getElementById('userName').textContent = emergencyUserData.displayName;
-        document.getElementById('userEmail').textContent = emergencyUserData.email;
-        document.getElementById('displayName').value = 
-            localStorage.getItem(`user_${emergencyUserId}_name`) || 'Emergency User';
-        
-        // Check user attempts
-        checkUserAttempts(emergencyUserId);
+        // Redirect to registration page
+        window.location.href = 'register.html';
         
     } else {
         emergencyError.textContent = '❌ Incorrect password. Please try again.';
