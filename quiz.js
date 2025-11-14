@@ -165,6 +165,15 @@ window.submitQuiz = async function() {
         if (!confirm) return;
     }
     
+    // Final confirmation before submission
+    const finalConfirm = window.confirm(
+        '⚠️ Are you sure you want to submit your quiz? You cannot change your answers after submission.'
+    );
+    if (!finalConfirm) return;
+    
+    // Show loading animation
+    showSubmitLoading();
+    
     // Stop timer
     clearInterval(timerInterval);
     const timeTaken = Math.floor((Date.now() - startTime) / 1000);
@@ -240,6 +249,33 @@ window.submitQuiz = async function() {
     sessionStorage.setItem('lastQuizPercentage', percentage);
     sessionStorage.setItem('lastQuizTime', timeTaken.toString());
     
-    // Redirect to results page
-    window.location.href = 'results.html';
+    // Wait for 5 seconds before redirecting
+    setTimeout(() => {
+        hideSubmitLoading();
+        window.location.href = 'results.html';
+    }, 5000);
+};
+
+function showSubmitLoading() {
+    // Create loading overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'submitLoadingOverlay';
+    overlay.innerHTML = `
+        <div class="submit-loading-content">
+            <div class="submit-spinner"></div>
+            <h2>Submitting Your Quiz...</h2>
+            <p>Please wait while we process your responses</p>
+            <div class="loading-dots">
+                <span>.</span><span>.</span><span>.</span>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+function hideSubmitLoading() {
+    const overlay = document.getElementById('submitLoadingOverlay');
+    if (overlay) {
+        overlay.remove();
+    }
 };

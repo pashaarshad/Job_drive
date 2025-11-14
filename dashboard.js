@@ -109,14 +109,17 @@ function loadQuizHistory(uid, itHistory, accountsHistory) {
     });
 }
 
-async function loadLeaderboard() {
+let currentLeaderboardType = 'it'; // Default to IT Quiz
+
+async function loadLeaderboard(quizType = 'it') {
+    currentLeaderboardType = quizType;
     const leaderboardContainer = document.getElementById('leaderboardContainer');
     leaderboardContainer.innerHTML = '<p style="text-align: center;">Loading leaderboard...</p>';
     
     try {
-        // Get top scores from Firebase
+        // Get top scores from Firebase filtered by quiz type
         const leaderboardRef = collection(db, 'leaderboard');
-        const q = query(leaderboardRef, orderBy('percentage', 'desc'), limit(10));
+        const q = query(leaderboardRef, orderBy('percentage', 'desc'), limit(100));
         const querySnapshot = await getDocs(q);
         
         if (querySnapshot.empty) {
@@ -124,11 +127,28 @@ async function loadLeaderboard() {
             return;
         }
         
+        // Filter by quiz type
+        const filteredData = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.quizType === quizType) {
+                filteredData.push(data);
+            }
+        });
+        
+        // Sort by percentage and take top 10
+        filteredData.sort((a, b) => b.percentage - a.percentage);
+        const top10 = filteredData.slice(0, 10);
+        
+        if (top10.length === 0) {
+            leaderboardContainer.innerHTML = '<p style="text-align: center; color: #666;">No leaderboard data yet for this quiz.</p>';
+            return;
+        }
+        
         leaderboardContainer.innerHTML = '';
         let rank = 1;
         
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
+        top10.forEach((data) => {
             const leaderboardItem = document.createElement('div');
             leaderboardItem.className = 'leaderboard-item';
             
@@ -173,6 +193,18 @@ window.takeQuiz = function(quizType) {
 
 window.goToQuizSelection = function() {
     window.location.href = 'quiz-selection.html';
+};
+
+window.switchLeaderboard = function(quizType) {
+    // Update active tab
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Load leaderboard for selected quiz type
+    loadLeaderboard(quizType);
 };
 
 window.logout = async function() {
