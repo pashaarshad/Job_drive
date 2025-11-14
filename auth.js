@@ -44,73 +44,91 @@ function hideLoading() {
 
 // Check for redirect result (important for mobile)
 console.log('Checking for redirect result on page load...');
-showLoading(); // Show loading while checking for redirect
-getRedirectResult(auth)
-    .then(async (result) => {
-        console.log('Redirect result:', result);
-        if (result && result.user) {
-            console.log('User signed in via redirect:', result.user.email);
-            const user = result.user;
-            
-            // Initialize user in Firestore if new
-            const userRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userRef);
-            
-            if (!userDoc.exists()) {
-                console.log('Creating new user in Firestore...');
-                await setDoc(userRef, {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL,
-                    createdAt: new Date(),
-                    totalAttempts: 0,
-                    quizScores: {
-                        it: [],
-                        accounts: []
-                    }
-                });
-                console.log('User created successfully');
+
+// Mark that we're checking for redirect to avoid infinite loops
+const isCheckingRedirect = sessionStorage.getItem('checking_redirect');
+if (isCheckingRedirect === 'true') {
+    console.log('Already checked redirect, skipping...');
+    hideLoading();
+} else {
+    sessionStorage.setItem('checking_redirect', 'true');
+    showLoading(); // Show loading while checking for redirect
+    
+    getRedirectResult(auth)
+        .then(async (result) => {
+            console.log('Redirect result:', result);
+            if (result && result.user) {
+                console.log('User signed in via redirect:', result.user.email);
+                const user = result.user;
+                
+                // Initialize user in Firestore if new
+                const userRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userRef);
+                
+                if (!userDoc.exists()) {
+                    console.log('Creating new user in Firestore...');
+                    await setDoc(userRef, {
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL,
+                        createdAt: new Date(),
+                        totalAttempts: 0,
+                        quizScores: {
+                            it: [],
+                            accounts: []
+                        }
+                    });
+                    console.log('User created successfully');
+                } else {
+                    console.log('User already exists in Firestore');
+                }
+                
+                // Store user email
+                localStorage.setItem('current_user_email', user.email);
+                
+                // Clear the checking flag
+                sessionStorage.removeItem('checking_redirect');
             } else {
-                console.log('User already exists in Firestore');
+                console.log('No redirect result found');
+                sessionStorage.removeItem('checking_redirect');
             }
+        })
+        .catch((error) => {
+            console.error('Error getting redirect result:', error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
             
-            // Store user email
-            localStorage.setItem('current_user_email', user.email);
-        } else {
-            console.log('No redirect result found');
-        }
-    })
-    .catch((error) => {
-        console.error('Error getting redirect result:', error);
-        console.error('Error code:', error.code);
-        console.error('Error message:', error.message);
-        
-        // Only show alert for actual errors, not cancelled operations
-        if (error.code !== 'auth/popup-closed-by-user' && 
-            error.code !== 'auth/cancelled-popup-request' &&
-            error.code !== 'auth/network-request-failed') {
+            // Clear the checking flag on error
+            sessionStorage.removeItem('checking_redirect');
             
-            // Show more specific error message
-            let errorMessage = 'Sign-in failed. ';
-            
-            if (error.code === 'auth/unauthorized-domain') {
-                errorMessage += 'Your Netlify domain needs to be authorized in Firebase Console. Please add your domain to Firebase Authentication settings.';
-            } else if (error.code === 'auth/operation-not-allowed') {
-                errorMessage += 'Google sign-in is not enabled. Please enable it in Firebase Console.';
-            } else if (error.code === 'auth/internal-error') {
-                errorMessage += 'Internal error. Please check your Firebase configuration.';
-            } else {
-                errorMessage += 'Please try again or use Emergency Login.';
+            // Only show alert for actual errors, not cancelled operations
+            if (error.code !== 'auth/popup-closed-by-user' && 
+                error.code !== 'auth/cancelled-popup-request' &&
+                error.code !== 'auth/network-request-failed') {
+                
+                // Show more specific error message
+                let errorMessage = 'Sign-in failed. ';
+                
+                if (error.code === 'auth/unauthorized-domain') {
+                    errorMessage += 'Your Netlify domain needs to be authorized in Firebase Console. Please add your domain to Firebase Authentication settings.';
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    errorMessage += 'Google sign-in is not enabled. Please enable it in Firebase Console.';
+                } else if (error.code === 'auth/internal-error') {
+                    errorMessage += 'Internal error. Please check your Firebase configuration.';
+                } else {
+                    errorMessage += 'Please try again or use Emergency Login.';
+                }
+                
+                alert(errorMessage);
             }
-            
-            alert(errorMessage);
-        }
-    })
-    .finally(() => {
-        console.log('Redirect check completed');
-        hideLoading(); // Hide loading after checking redirect
-    });
+        })
+        .finally(() => {
+            console.log('Redirect check completed');
+            sessionStorage.removeItem('checking_redirect');
+            hideLoading(); // Hide loading after checking redirect
+        });
+}
 
 // Check authentication state
 onAuthStateChanged(auth, async (user) => {
@@ -121,6 +139,7 @@ onAuthStateChanged(auth, async (user) => {
         localStorage.setItem('current_user_email', user.email);
         
         googleSignInBtn.style.display = 'none';
+        if (emergencyLoginBtn) emergencyLoginBtn.style.display = 'none';
         userInfoDiv.style.display = 'block';
         
         document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/80';
@@ -136,6 +155,7 @@ onAuthStateChanged(auth, async (user) => {
             localStorage.getItem(`user_${user.uid}_name`) || user.displayName || '';
     } else {
         googleSignInBtn.style.display = 'flex';
+        if (emergencyLoginBtn) emergencyLoginBtn.style.display = 'flex';
         userInfoDiv.style.display = 'none';
         nameSection.style.display = 'none';
         localStorage.removeItem('current_user_email');
@@ -156,6 +176,10 @@ googleSignInBtn.addEventListener('click', async () => {
             // Use redirect for mobile devices (more reliable)
             console.log('Using redirect sign-in for mobile');
             try {
+                // Clear any previous redirect check flags
+                sessionStorage.removeItem('checking_redirect');
+                
+                // Initiate redirect
                 await signInWithRedirect(auth, provider);
                 console.log('Redirect initiated');
                 // Note: Page will redirect, loading will be shown until then
