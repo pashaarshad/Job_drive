@@ -3,13 +3,28 @@ import { auth, onAuthStateChanged, signOut } from './firebase-config.js';
 
 let currentUser = null;
 
-// Check authentication and load results
+// Check authentication and load results (including emergency login)
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
         loadResults(user.uid);
     } else {
-        window.location.href = 'login.html';
+        // Check for emergency user
+        const isEmergency = localStorage.getItem('emergency_user') === 'true';
+        const emergencyUserId = localStorage.getItem('emergency_user_id');
+        
+        if (isEmergency && emergencyUserId) {
+            currentUser = {
+                uid: emergencyUserId,
+                email: 'emergency@quizplatform.local',
+                displayName: localStorage.getItem(`user_${emergencyUserId}_name`) || 'Emergency User',
+                isEmergency: true
+            };
+            
+            loadResults(emergencyUserId);
+        } else {
+            window.location.href = 'login.html';
+        }
     }
 });
 
@@ -90,7 +105,18 @@ window.takeAnotherQuiz = function() {
 
 window.logout = async function() {
     try {
-        await signOut(auth);
+        // Check if emergency user
+        const isEmergency = localStorage.getItem('emergency_user') === 'true';
+        
+        if (isEmergency) {
+            // Clear emergency user data
+            localStorage.removeItem('emergency_user');
+            localStorage.removeItem('emergency_user_id');
+            localStorage.removeItem('current_user_email');
+        } else {
+            await signOut(auth);
+        }
+        
         window.location.href = 'login.html';
     } catch (error) {
         console.error('Error signing out:', error);

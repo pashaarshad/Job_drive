@@ -4,7 +4,7 @@ import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.
 
 let currentUser = null;
 
-// Check authentication
+// Check authentication (including emergency login)
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -14,7 +14,26 @@ onAuthStateChanged(auth, async (user) => {
         // Load dashboard data
         await loadDashboard(user.uid);
     } else {
-        window.location.href = 'login.html';
+        // Check for emergency user
+        const isEmergency = localStorage.getItem('emergency_user') === 'true';
+        const emergencyUserId = localStorage.getItem('emergency_user_id');
+        
+        if (isEmergency && emergencyUserId) {
+            currentUser = {
+                uid: emergencyUserId,
+                email: 'emergency@quizplatform.local',
+                displayName: localStorage.getItem(`user_${emergencyUserId}_name`) || 'Emergency User',
+                isEmergency: true
+            };
+            
+            const userName = localStorage.getItem(`user_${emergencyUserId}_name`) || 'Emergency User';
+            document.getElementById('welcomeUser').textContent = `Welcome, ${userName}!`;
+            
+            // Load dashboard data
+            await loadDashboard(emergencyUserId);
+        } else {
+            window.location.href = 'login.html';
+        }
     }
 });
 
@@ -209,7 +228,18 @@ window.switchLeaderboard = function(quizType) {
 
 window.logout = async function() {
     try {
-        await signOut(auth);
+        // Check if emergency user
+        const isEmergency = localStorage.getItem('emergency_user') === 'true';
+        
+        if (isEmergency) {
+            // Clear emergency user data
+            localStorage.removeItem('emergency_user');
+            localStorage.removeItem('emergency_user_id');
+            localStorage.removeItem('current_user_email');
+        } else {
+            await signOut(auth);
+        }
+        
         window.location.href = 'login.html';
     } catch (error) {
         console.error('Error signing out:', error);

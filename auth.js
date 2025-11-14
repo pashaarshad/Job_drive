@@ -2,12 +2,19 @@
 import { auth, provider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, doc, setDoc, getDoc, db } from './firebase-config.js';
 
 const googleSignInBtn = document.getElementById('googleSignIn');
+const emergencyLoginBtn = document.getElementById('emergencyLoginBtn');
+const emergencyModal = document.getElementById('emergencyModal');
+const emergencySubmit = document.getElementById('emergencySubmit');
+const emergencyPassword = document.getElementById('emergencyPassword');
+const emergencyError = document.getElementById('emergencyError');
+const closeModal = document.querySelector('.close-modal');
 const userInfoDiv = document.getElementById('userInfo');
 const nameSection = document.getElementById('nameSection');
 const proceedBtn = document.getElementById('proceedBtn');
 const loadingIndicator = document.getElementById('loadingIndicator');
 
 let currentUser = null;
+let isEmergencyUser = false;
 
 // Detect if on mobile device
 function isMobileDevice() {
@@ -185,5 +192,102 @@ proceedBtn.addEventListener('click', () => {
         
         // Proceed to quiz selection
         window.location.href = 'quiz-selection.html';
+    }
+});
+
+// Emergency Login Modal
+emergencyLoginBtn.addEventListener('click', () => {
+    emergencyModal.style.display = 'flex';
+    emergencyPassword.value = '';
+    emergencyError.style.display = 'none';
+    setTimeout(() => emergencyPassword.focus(), 100);
+});
+
+closeModal.addEventListener('click', () => {
+    emergencyModal.style.display = 'none';
+});
+
+window.addEventListener('click', (e) => {
+    if (e.target === emergencyModal) {
+        emergencyModal.style.display = 'none';
+    }
+});
+
+// Emergency password submission
+emergencyPassword.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        emergencySubmit.click();
+    }
+});
+
+emergencySubmit.addEventListener('click', async () => {
+    const password = emergencyPassword.value.trim();
+    
+    if (password === 'ROOT') {
+        emergencyError.style.display = 'none';
+        
+        // Create emergency user object
+        const emergencyUserId = 'emergency_user_' + Date.now();
+        const emergencyUserData = {
+            uid: emergencyUserId,
+            email: 'emergency@quizplatform.local',
+            displayName: 'Emergency User',
+            photoURL: 'https://via.placeholder.com/80?text=Emergency',
+            isEmergency: true
+        };
+        
+        currentUser = emergencyUserData;
+        isEmergencyUser = true;
+        
+        // Store in local storage
+        localStorage.setItem('current_user_email', emergencyUserData.email);
+        localStorage.setItem('emergency_user', 'true');
+        localStorage.setItem('emergency_user_id', emergencyUserId);
+        
+        // Initialize Firebase data for emergency user
+        try {
+            const userRef = doc(db, 'users', emergencyUserId);
+            const userDoc = await getDoc(userRef);
+            
+            if (!userDoc.exists()) {
+                await setDoc(userRef, {
+                    uid: emergencyUserId,
+                    email: emergencyUserData.email,
+                    displayName: emergencyUserData.displayName,
+                    photoURL: emergencyUserData.photoURL,
+                    isEmergency: true,
+                    createdAt: new Date(),
+                    totalAttempts: 0,
+                    quizScores: {
+                        it: [],
+                        accounts: []
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error creating emergency user in Firebase:', error);
+        }
+        
+        // Update UI
+        emergencyModal.style.display = 'none';
+        googleSignInBtn.style.display = 'none';
+        emergencyLoginBtn.style.display = 'none';
+        userInfoDiv.style.display = 'block';
+        nameSection.style.display = 'block';
+        
+        document.getElementById('userPhoto').src = emergencyUserData.photoURL;
+        document.getElementById('userName').textContent = emergencyUserData.displayName;
+        document.getElementById('userEmail').textContent = emergencyUserData.email;
+        document.getElementById('displayName').value = 
+            localStorage.getItem(`user_${emergencyUserId}_name`) || 'Emergency User';
+        
+        // Check user attempts
+        checkUserAttempts(emergencyUserId);
+        
+    } else {
+        emergencyError.textContent = '❌ Incorrect password. Please try again.';
+        emergencyError.style.display = 'block';
+        emergencyPassword.value = '';
+        emergencyPassword.focus();
     }
 });

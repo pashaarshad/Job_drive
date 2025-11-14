@@ -35,7 +35,7 @@ body {
 /* Ensure all buttons are touch-friendly */
 button, .btn-start, .btn-google, .btn-primary, .btn-secondary, 
 .btn-select, .btn-nav, .btn-submit, .btn-logout, .btn-dashboard,
-.btn-pdf-download, a.btn-pdf-download {
+.btn-pdf-download, a.btn-pdf-download, .btn-emergency {
     min-height: 44px; /* iOS recommended touch target size */
     touch-action: manipulation; /* Improve touch responsiveness */
 }
@@ -339,6 +339,141 @@ header h1 {
     border-color: #1e3c72;
     background: #f8f9fa;
     box-shadow: 0 3px 10px rgba(30, 60, 114, 0.3);
+}
+
+/* OR Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 25px auto;
+    max-width: 300px;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ccc;
+}
+
+.divider span {
+    padding: 0 15px;
+    color: #666;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+/* Emergency Login Button */
+.btn-emergency {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.btn-emergency:hover {
+    background: linear-gradient(135deg, #ee5a24 0%, #ff6b6b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+/* Emergency Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 30px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.modal-content h2 {
+    color: #1e3c72;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.modal-content p {
+    color: #666;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.modal-content input[type="password"] {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+}
+
+.modal-content input[type="password"]:focus {
+    outline: none;
+    border-color: #1e3c72;
+}
+
+.modal-content .btn-primary {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
 }
 
 #userInfo {
@@ -898,6 +1033,23 @@ header h1 {
         gap: 10px;
         margin-top: 15px;
         width: 100%;
+    }
+    
+    /* Mobile Emergency Login */
+    .modal-content {
+        padding: 30px 20px;
+        width: 95%;
+    }
+    
+    .btn-emergency,
+    .btn-google {
+        max-width: 100%;
+        font-size: 1em;
+        padding: 12px 20px;
+    }
+    
+    .divider {
+        max-width: 100%;
     }
     
     /* Mobile Responsive for Tabs */

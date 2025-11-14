@@ -10,7 +10,7 @@ let userAnswers = [];
 let startTime = null;
 let timerInterval = null;
 
-// Check authentication and load quiz
+// Check authentication and load quiz (including emergency login)
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
@@ -31,7 +31,37 @@ onAuthStateChanged(auth, (user) => {
         
         loadQuiz();
     } else {
-        window.location.href = 'login.html';
+        // Check for emergency user
+        const isEmergency = localStorage.getItem('emergency_user') === 'true';
+        const emergencyUserId = localStorage.getItem('emergency_user_id');
+        
+        if (isEmergency && emergencyUserId) {
+            currentUser = {
+                uid: emergencyUserId,
+                email: 'emergency@quizplatform.local',
+                displayName: localStorage.getItem(`user_${emergencyUserId}_name`) || 'Emergency User',
+                isEmergency: true
+            };
+            
+            currentQuizType = sessionStorage.getItem('selectedQuiz');
+            
+            if (!currentQuizType) {
+                window.location.href = 'quiz-selection.html';
+                return;
+            }
+            
+            // Check if this quiz is already completed
+            const quizCompleted = localStorage.getItem(`user_${emergencyUserId}_quiz_${currentQuizType}_completed`) === 'true';
+            if (quizCompleted) {
+                alert('You have already completed this quiz!');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            loadQuiz();
+        } else {
+            window.location.href = 'login.html';
+        }
     }
 });
 
