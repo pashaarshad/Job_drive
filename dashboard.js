@@ -1,6 +1,6 @@
 // Dashboard Logic
 import { auth, onAuthStateChanged, signOut, db, doc, getDoc } from './firebase-config.js';
-import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 let currentUser = null;
 
@@ -142,39 +142,36 @@ async function loadLeaderboard(quizType = 'it') {
     leaderboardContainer.innerHTML = '<p style="text-align: center;">Loading leaderboard...</p>';
     
     try {
-        // Get top scores from Firebase filtered by quiz type
+        // Get all scores from Firebase (no orderBy to avoid index requirement)
         const leaderboardRef = collection(db, 'leaderboard');
-        const q = query(leaderboardRef, orderBy('percentage', 'desc'), limit(100));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(leaderboardRef);
         
         if (querySnapshot.empty) {
             leaderboardContainer.innerHTML = '<p style="text-align: center; color: #666;">No leaderboard data yet.</p>';
             return;
         }
         
-        // Filter by quiz type
+        // Filter by quiz type and collect data
         const filteredData = [];
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
             if (data && data.quizType === quizType && data.percentage != null) {
                 // Ensure percentage is a number
                 data.percentage = parseFloat(data.percentage);
-                filteredData.push(data);
+                if (!isNaN(data.percentage)) {
+                    filteredData.push(data);
+                }
             }
         });
         
-        // Sort by percentage (handle NaN) and take top 10
-        filteredData.sort((a, b) => {
-            const aPerc = isNaN(a.percentage) ? 0 : a.percentage;
-            const bPerc = isNaN(b.percentage) ? 0 : b.percentage;
-            return bPerc - aPerc;
-        });
-        const top10 = filteredData.slice(0, 10);
-        
-        if (top10.length === 0) {
+        if (filteredData.length === 0) {
             leaderboardContainer.innerHTML = '<p style="text-align: center; color: #666;">No leaderboard data yet for this quiz.</p>';
             return;
         }
+        
+        // Sort by percentage (highest first) and take top 10
+        filteredData.sort((a, b) => b.percentage - a.percentage);
+        const top10 = filteredData.slice(0, 10);
         
         leaderboardContainer.innerHTML = '';
         let rank = 1;
@@ -185,7 +182,7 @@ async function loadLeaderboard(quizType = 'it') {
             
             const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
             const displayName = data.name || 'Anonymous';
-            const displayPercentage = isNaN(data.percentage) ? '0' : data.percentage.toFixed(2);
+            const displayPercentage = data.percentage.toFixed(2);
             const isCurrentUser = currentUser && data.uid === currentUser.uid;
             
             leaderboardItem.innerHTML = `
@@ -199,7 +196,8 @@ async function loadLeaderboard(quizType = 'it') {
         });
     } catch (error) {
         console.error('Error loading leaderboard:', error);
-        leaderboardContainer.innerHTML = '<p style="text-align: center; color: red;">Failed to load leaderboard.</p>';
+        console.error('Error details:', error.message);
+        leaderboardContainer.innerHTML = `<p style="text-align: center; color: red;">Failed to load leaderboard. ${error.message || 'Please try again.'}</p>`;
     }
 }
 
